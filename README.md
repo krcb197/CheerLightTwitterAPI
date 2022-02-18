@@ -105,12 +105,12 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
         return f'My tweet {colour.name}'
 ```
 
-## pass in a user Jinja template
+## User Jinja template
 
 When initialising the ```CheerLightTwitterAPI``` class pass in the string name for your own 
-folder of templates and user context using for example:
+folder of templates and user context using 
 
-put a file called ```tweet.jinja``` in a folder called ```custom_templates```. 
+for example put a file called ```tweet.jinja``` in a folder called ```custom_templates```. 
 
 In this case we can extend the template with a new parameter: ```user```
 
