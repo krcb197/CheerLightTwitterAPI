@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 In order to use this library you will need twitter API keys, [How to get access to the Twitter API](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 
-> :warning: **WARNING**: Please be careful not to expose you Twitter API keys don't share them with other people or upload them to a cloud repository without care 
+> :warning: **WARNING**: Please be careful not to expose Twitter API keys. **DO NOT** share them with other people or upload them to a cloud repository without care 
 
 These are then accessed by the class in one of two ways (in this order of priority):
 
