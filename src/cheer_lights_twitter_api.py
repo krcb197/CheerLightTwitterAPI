@@ -101,8 +101,8 @@ class CheerLightTwitterAPI:
             twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
             twitter_access_secret = os.environ.get("TWITTER_ACCESS_SECRET")
 
-        auth = tweepy.OAuthHandler(consumer_key=twitter_consumer_key,
-                                   consumer_secret=twitter_consumer_secret)
+        auth = tweepy.OAuth1UserHandler(consumer_key=twitter_consumer_key,
+                                        consumer_secret=twitter_consumer_secret)
         auth.set_access_token(key=twitter_access_token,
                               secret=twitter_access_secret)
 
