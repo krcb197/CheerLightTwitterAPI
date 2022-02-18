@@ -112,6 +112,7 @@ class CheerLightTwitterAPI:
         """
         Disconnect from the Twitter API
         """
+        self.__logger.info('disconnecting from twitter with environmental variable credentials')
         self.__twitter_api = None
 
     def __enter__(self):
