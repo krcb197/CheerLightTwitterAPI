@@ -101,7 +101,30 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 ## pass in a user Jinja template
 
 When initialising the ```CheerLightTwitterAPI``` class pass in the string name for your own 
-folder of templates and user context using the 
+folder of templates and user context using for example:
+
+put a file called ```tweet.jinja``` in a folder called ```custom_templates```. 
+
+In this case we can extend the template with a new parameter: ```user```
+
+```jinja
+@cheerlights {{ colour }} from {{ user }}
+```
+
+In this case the ```CheerLightTwitterAPI``` is then created with a new context which extends
+the jinja context with a new parameter called ```user```
+
+```python
+custom_context = {
+        'user' : 'Bob'
+    }
+
+ dut = CheerLightTwitterAPI(user_template_dir='custom_templates',
+                            user_template_context=custom_context)
+ # no need to connect to just test the payload generation
+ payload = dut.tweet(colour='orange')
+```
+This will create a tweet with the following payload: `@cheerlights orange from Bob`
 
 
 
