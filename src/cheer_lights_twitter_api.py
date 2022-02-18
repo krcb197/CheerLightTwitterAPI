@@ -188,7 +188,7 @@ class CheerLightTwitterAPI:
 
         tweet_content = self.tweet_payload(colour)
 
-        self.__logger.info('Built Tweet: {tweet_content}')
+        self.__logger.info(f'Built Tweet: {tweet_content}')
 
         self.send_tweet(payload=tweet_content)
 
