@@ -5,6 +5,9 @@ Generate tweets to for Cheerlights
 
 # Installation
 
+This tool runs on Python 3.10, though it will hopefully work on 3.9 and 3.8 too (might need to
+test that)
+
 To install the required packages 
 
 ```bash
@@ -15,12 +18,14 @@ pip install -r requirements.txt
 
 In order to use this library you will need twitter API keys, [How to get access to the Twitter API](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 
+> :warning: **WARNING**: Please be careful not to expose you Twitter API keys don't share them with other people or upload them to a cloud repository without care 
+
 These are then accessed by the class in one of two ways (in this order of priority):
 
 1. A file called ```twitter_credentials.json``` which is in the working directory (this is not 
    stored into GitHub), refer to ```example_twitter_credentials.json``` for the example format
 2. Via the follow four environment variables, this is the recommended way to pass keys within a
-   cloud enviroment e.g. GitHub:
+   cloud environment e.g. GitHub from the repository secrets:
       - ```TWITTER_API_KEY```
       - ```TWITTER_API_SECRET```
       - ```TWITTER_ACCESS_TOKEN```
