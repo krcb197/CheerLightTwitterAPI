@@ -1,3 +1,5 @@
+![CI](https://github.com/krcb197/PeakRDL-python/actions/workflows/action.yaml/badge.svg)
+
 # CheerLightTwitterAPI
 Generate tweets to for Cheerlights
 
