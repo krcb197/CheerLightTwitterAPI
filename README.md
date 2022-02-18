@@ -5,8 +5,7 @@ Generate tweets to for Cheerlights
 
 # Installation
 
-This tool runs on Python 3.10, though it will hopefully work on 3.9 and 3.8 too (might need to
-test that)
+This tool runs on Python 3.10, 3.9 and 3.8 ( I suggest you use 3.10 as that is the latest version)
 
 To install the required packages 
 

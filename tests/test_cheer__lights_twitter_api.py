@@ -4,6 +4,7 @@ from typing import Union
 from random import randint
 
 import pytest
+import sys
 
 from src.cheer_lights_twitter_api import CheerLightTwitterAPI
 from src.cheer_lights_twitter_api import CheerLightColours
@@ -94,7 +95,8 @@ def test_tweet():
 
             # twitter API blocks tweets which are duplicate values so add a random value to
             # stop this causing an error
-            return f'test tweet {colour_str} with random value {self.last_random_value:d}'
+            return f'test tweet {colour_str} with random value {self.last_random_value:d} on ' \
+                   f'Python {sys.version_info.major}.{sys.version_info.minor}'
 
 
     # test with manual connect disconnect
@@ -105,13 +107,15 @@ def test_tweet():
 
     dut.connect()
     dut.tweet('blue')
-    assert dut.last_tweet_text == f'test tweet blue with random value {dut.last_random_value:d}'
+    assert dut.last_tweet_text.startswith(f'test tweet blue with random value '
+                                          f'{dut.last_random_value:d}')
     dut.disconnect()
 
     # test in a context manager
     with TestCheerLightTwitterAPI() as alt_dut:
         alt_dut.tweet(CheerLightColours.GREEN)
-        assert alt_dut.last_tweet_text == f'test tweet green with random value {alt_dut.last_random_value:d}'
+        assert alt_dut.last_tweet_text.startswith(f'test tweet green with random value '
+                                                  f'{alt_dut.last_random_value:d}')
 
 
 
