@@ -155,10 +155,8 @@ disable=print-statement,
         comprehension-escape,
 
         #additional items for this library
-        fixme,
-        import-error,
-        no-name-in-module,
-        duplicate-code
+        logging-fstring-interpolation
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
