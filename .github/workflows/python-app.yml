@@ -25,7 +25,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pylint
         pip install pytest
-        pip intall mypy
+        pip install mypy
         pip install -r requirements.txt;
     
     - name: Lint with pylint
