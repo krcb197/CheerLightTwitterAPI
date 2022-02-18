@@ -24,7 +24,7 @@ These are then accessed by the class in one of two ways (in this order of priori
 
 1. A file called ```twitter_credentials.json``` which is in the working directory (this is not 
    stored into GitHub), refer to ```example_twitter_credentials.json``` for the example format
-2. Via the follow four environment variables, this is the recommended way to pass keys within a
+2. Via the following four environment variables, this is the recommended way to pass keys within a
    cloud environment e.g. GitHub from the repository secrets:
       - ```TWITTER_API_KEY```
       - ```TWITTER_API_SECRET```
