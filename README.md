@@ -99,10 +99,24 @@ Build a derived class from the ```CheerLightTwitterAPI``` and overload the ```tw
 method. At this poitn you are bypassing the all the jinja templates
 
 ```python
+from typing import Union
+
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
-    def tweet_payload(self, colour: CheerLightColours) -> str:
-        return f'My tweet {colour.name}'
+    def tweet_payload(self, colour: Union[CheerLightColours, str]) -> str:
+       
+        #type check the colour parameter
+        self.verify_colour(colour)
+
+        # build message using a jinga template
+        if isinstance(colour, str):
+            colour_str = colour
+        elif isinstance(colour, CheerLightColours):
+            colour_str = colour.name.lower()
+        else:
+            raise RuntimeError('unhandled colour type')
+       
+        return f'My tweet {colour_str}'
 ```
 
 ## User Jinja template
@@ -126,10 +140,9 @@ custom_context = {
         'user' : 'Bob'
     }
 
- dut = CheerLightTwitterAPI(user_template_dir='custom_templates',
-                            user_template_context=custom_context)
- # no need to connect to just test the payload generation
- payload = dut.tweet(colour='orange')
+with CheerLightTwitterAPI(user_template_dir='custom_templates',
+                            user_template_context=custom_context) as dut:
+    dut.tweet(colour='orange')
 ```
 This will create a tweet with the following payload: `@cheerlights orange from Bob`
 
