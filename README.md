@@ -56,7 +56,7 @@ from cheer_lights_twitter_api import CheerLightColours
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 
 with CheerLightTwitterAPI() as cheer_lights:
-    cheer_lights.tweet(CheerLightColours[CheerLightColours.red])
+    cheer_lights.tweet(CheerLightColours[CheerLightColours.RED])
 
 ```
 
@@ -70,7 +70,7 @@ from cheer_lights_twitter_api import CheerLightTwitterAPI
 cheer_lights = CheerLightTwitterAPI()
 cheer_lights.connect()
 # make a tweet with the colour red
-cheer_lights.tweet(CheerLightColours[CheerLightColours.red])
+cheer_lights.tweet(CheerLightColours[CheerLightColours.RED])
 cheer_lights.disconnect()
 
 ```
