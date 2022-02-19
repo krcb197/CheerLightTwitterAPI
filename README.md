@@ -145,6 +145,29 @@ with CheerLightTwitterAPI(user_template_dir='custom_templates',
 ```
 This will create a tweet with the following payload: `@cheerlights orange from Bob`
 
+# Development and Testing
+
+During Development, it may be useful to stop:
+- The connection being made to the Twitter API (prehaps because you haven't got the keys)
+- Tweets from being generated, because it is annoying deleting them all
+
+This can be avoided as follows:
+```python
+with CheerLightTwitterAPI(suppress_tweeting=True) as dut:
+    dut.tweet(colour='orange')
+```
+
+The same thing can be achieved by setting the ```-s``` switch when running from the command line
+
+Similarly all connections and tweets are suppressed as follows:
+
+```python
+with CheerLightTwitterAPI(suppress_tweeting=True, suppress_connection=True) as dut:
+    dut.tweet(colour='orange')
+```
+
+The same thing can be achieved by setting the ```-c``` switch when running from the command line
+
 
 
 
