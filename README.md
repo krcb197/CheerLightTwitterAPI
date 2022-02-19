@@ -1,7 +1,7 @@
 ![CI](https://github.com/krcb197/PeakRDL-python/actions/workflows/action.yaml/badge.svg)
 
 # CheerLightTwitterAPI
-Generate tweets to for Cheerlights
+Generate tweets for [CheerLights](https://cheerlights.com/). This code is intended to used within an application that will tweet out to cheerlights on a specific action. This module takes care of all the Twitter interconnectivity and formatting a tweet from a template.
 
 # Installation
 
@@ -19,7 +19,7 @@ In order to use this library you will need twitter API keys
 
 > :warning: **WARNING**: Please be careful not to expose Twitter API keys. **DO NOT** share them with other people or upload them to a cloud repository without care 
 
-The twitter access keys are split into two parts:
+The twitter keys are split into two parts:
 
 | Syntax      | Description                                        |
 | ----------- | -------------------------------------------------- |
@@ -44,6 +44,8 @@ There are two methods to get these keys:
    [How to get access to the Twitter API](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
 2. Obtain the consumer keys from someone who already has configured an application. Then generate 
    the access Keys for your own Twitter account
+
+## Generating an Access Key (If someone has given you the Consumer Key)
 
 The easiest way to generate the access keys is as follows: 
 
