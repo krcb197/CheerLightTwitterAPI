@@ -127,6 +127,9 @@ class CheerLightTwitterAPI:
         """
         retrieve the text of the last tweet sent, this is useful for doing a round trip test
         """
+        if self.__twitter_api is None:
+            raise RuntimeError('Twitter API not connected')
+
         tweet = self.__twitter_api.user_timeline(count=1)
         return tweet
 
@@ -134,6 +137,9 @@ class CheerLightTwitterAPI:
         """
         retrieve the text of the last tweet sent, this is useful for doing a round trip test
         """
+        if self.__twitter_api is None:
+            raise RuntimeError('Twitter API not connected')
+
         tweet = self.__twitter_api.user_timeline(since_id=since_id, count=count)
         return tweet
 
@@ -227,7 +233,8 @@ parser.add_argument('colour', type=str,
 parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
                     help='All the logging information will be shown in the console')
 parser.add_argument('--suppress_tweeting', '-s', dest='suppress_tweeting', action='store_true',
-                    help='Makes the connection to twitter but will suppress any update status, this is useful for testing')
+                    help='Makes the connection to twitter but will suppress any update status, '
+                         'this is useful for testing')
 
 if __name__ == "__main__":
 
