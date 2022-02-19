@@ -16,6 +16,7 @@ import jinja2 as jj
 
 file_path = os.path.dirname(__file__)
 
+
 class CheerLightColours(IntEnum):
     """
     colour supported by CheerLight API
@@ -32,6 +33,7 @@ class CheerLightColours(IntEnum):
     ORANGE = 0xFFA500
     PINK = 0xFFC0CB
 
+
 class CheerLightTwitterAPI:
     """
     Class to sent a tweet to the Cheerlights server
@@ -46,16 +48,17 @@ class CheerLightTwitterAPI:
 
         user_template_dir = kwargs.pop("user_template_dir", None)
         self.__user_template_context = kwargs.pop("user_template_context", {})
-        self.__supress_tweeting = kwargs.pop("suppress_tweeting", False)
-        self.__supress_connection = kwargs.pop("suppress_connection", False)
+        self.__suppress_tweeting = kwargs.pop("suppress_tweeting", False)
+        self.__suppress_connection = kwargs.pop("suppress_connection", False)
+        self.__generate_access_token = kwargs.pop("generate_access", False)
 
         if user_template_dir:
             loader = jj.ChoiceLoader([
                 jj.FileSystemLoader(user_template_dir),
                 jj.FileSystemLoader(os.path.join(file_path, "templates")),
-                jj.PrefixLoader({ 'user': jj.FileSystemLoader(user_template_dir),
-                                  'base': jj.FileSystemLoader(os.path.join(file_path, "templates"))
-                                },
+                jj.PrefixLoader({'user': jj.FileSystemLoader(user_template_dir),
+                                 'base': jj.FileSystemLoader(os.path.join(file_path, "templates"))
+                                 },
                                 delimiter=":")
             ])
         else:
@@ -77,7 +80,7 @@ class CheerLightTwitterAPI:
         """
         Connect to the Twitter API
         """
-        if self.__supress_connection is True:
+        if self.__suppress_connection is True:
             self.__logger.warning('connecting to twitter is supressed')
         else:
             if os.path.exists('consumer_twitter_credentials.json'):
@@ -223,6 +226,9 @@ class CheerLightTwitterAPI:
         """
         String to be tweeted out based on the colour
         :param colour: colour
+        :param jinja_context: a dictionary containing the jinja context to use with the template
+                              this is addition to the provided with the object is initialised and
+                              the context generated within the function itself
         :return: tweet payload
         """
 
@@ -253,6 +259,9 @@ class CheerLightTwitterAPI:
         """
 
         :param colour: colour to include in the tweet
+        :param jinja_context: a dictionary containing the jinja context to use with the template
+                              this is addition to the provided with the object is initialised and
+                              the context generated within the function itself
         :return:
         """
 
@@ -270,14 +279,14 @@ class CheerLightTwitterAPI:
         :param payload: string to tweet
         :type payload: str
         """
-        if self.__supress_connection is True:
+        if self.__suppress_connection is True:
             self.__logger.warning('Tweet was suppressed and not sent')
             tweet = None
         else:
             if self.__twitter_api is None:
                 raise RuntimeError('Not connected to the twitter API')
 
-            if self.__supress_tweeting is False:
+            if self.__suppress_tweeting is False:
                 #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
                 tweet = self.__twitter_api.update_status(payload)
 
