@@ -32,6 +32,18 @@ def test_tweet_unit_test(mocked_tweepy):
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
 
+def test_supressed_tweet_unit_test(mocked_tweepy):
+    """
+    test that the tweets are not made id the suppress_tweeting option is selected
+    """
+    dut = CheerLightTwitterAPI(suppress_tweeting=True)
+    dut.connect()
+    mocked_tweepy['tweepy_api_patch'].reset_mock()
+    dut.tweet('blue')
+    mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_not_called()
+    mocked_tweepy['tweepy_api_patch'].reset_mock()
+    dut.disconnect()
+
 
 def test_tweet_payload():
     """

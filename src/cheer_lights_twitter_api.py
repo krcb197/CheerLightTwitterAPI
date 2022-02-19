@@ -44,6 +44,7 @@ class CheerLightTwitterAPI:
 
         user_template_dir = kwargs.pop("user_template_dir", None)
         self.__user_template_context = kwargs.pop("user_template_context", {})
+        self.__supress_tweeting = kwargs.pop("suppress_tweeting", False)
 
         if user_template_dir:
             loader = jj.ChoiceLoader([
@@ -202,9 +203,12 @@ class CheerLightTwitterAPI:
         if self.__twitter_api is None:
             raise RuntimeError('Not connected to the twitter API')
 
-        self.__twitter_api.update_status(payload)
+        if self.__supress_tweeting is False:
+            self.__twitter_api.update_status(payload)
 
-        self.__logger.info('Tweet Sent')
+            self.__logger.info('Tweet Sent')
+        else:
+            self.__logger.warning('Tweet was suppressed and not sent')
 
 
 parser = argparse.ArgumentParser(description='Python Code to generate a CheerLights Tweet',
@@ -212,7 +216,10 @@ parser = argparse.ArgumentParser(description='Python Code to generate a CheerLig
                                         'for more details')
 parser.add_argument('colour', type=str,
                     choices=[choice.name.lower() for choice in CheerLightColours])
-parser.add_argument('--verbose', '-v', dest='verbose', action='store_true')
+parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
+                    help='All the logging information will be shown in the console')
+parser.add_argument('--suppress_tweeting', '-s', dest='suppress_tweeting', action='store_true',
+                    help='Makes the connection to twitter but will suppress any update status, this is useful for testing')
 
 if __name__ == "__main__":
 
@@ -250,6 +257,6 @@ if __name__ == "__main__":
         }
         logging.config.dictConfig(LOGGING_CONFIG)
 
-    cheer_lights = CheerLightTwitterAPI()
+    cheer_lights = CheerLightTwitterAPI(suppress_tweeting=command_args.suppress_tweeting)
     cheer_lights.connect()
     cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])
