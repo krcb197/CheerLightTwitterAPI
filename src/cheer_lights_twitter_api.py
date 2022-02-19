@@ -10,6 +10,8 @@ import os
 import json
 
 import tweepy
+from tweepy.models import Status as TweepyStatus
+from tweepy.models import ResultSet as TweepyResultSet
 import jinja2 as jj
 
 file_path = os.path.dirname(__file__)
@@ -125,13 +127,19 @@ class CheerLightTwitterAPI:
         return self.__twitter_api.get_settings()['screen_name']  # type: ignore
 
     @property
-    def last_tweet_text(self) -> str:
+    def last_tweet(self) -> TweepyResultSet:
         """
         retrieve the text of the last tweet sent, this is useful for doing a round trip test
         """
-        tweet = self.__twitter_api.user_timeline(screen_name=self.__screen_name, # type: ignore
-                                                 count=1) # type: ignore
-        return tweet[0].text # type: ignore
+        tweet = self.__twitter_api.user_timeline(count=1)
+        return tweet
+
+    def tweets_since(self, since_id, count) -> TweepyResultSet:
+        """
+        retrieve the text of the last tweet sent, this is useful for doing a round trip test
+        """
+        tweet = self.__twitter_api.user_timeline(since_id=since_id, count=count)
+        return tweet
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
@@ -179,7 +187,7 @@ class CheerLightTwitterAPI:
 
         return tweet_content
 
-    def tweet(self, colour: Union[CheerLightColours, str]) -> None:
+    def tweet(self, colour: Union[CheerLightColours, str]) -> Optional[TweepyStatus]:
         """
 
         :param colour: colour to include in the tweet
@@ -192,9 +200,9 @@ class CheerLightTwitterAPI:
 
         self.__logger.info(f'Built Tweet: {tweet_content}')
 
-        self.send_tweet(payload=tweet_content)
+        return self.send_tweet(payload=tweet_content)
 
-    def send_tweet(self, payload: str) -> None:
+    def send_tweet(self, payload: str) -> Optional[TweepyStatus]:
         """
         Send a tweet with the payload provided
         :param payload: string to tweet
@@ -204,11 +212,15 @@ class CheerLightTwitterAPI:
             raise RuntimeError('Not connected to the twitter API')
 
         if self.__supress_tweeting is False:
-            self.__twitter_api.update_status(payload)
+            #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
+            tweet = self.__twitter_api.update_status(payload)
 
             self.__logger.info('Tweet Sent')
         else:
             self.__logger.warning('Tweet was suppressed and not sent')
+            tweet = None
+
+        return tweet
 
 
 parser = argparse.ArgumentParser(description='Python Code to generate a CheerLights Tweet',
