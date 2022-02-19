@@ -162,7 +162,7 @@ The same thing can be achieved by setting the ```-s``` switch when running from 
 Similarly all connections and tweets are suppressed as follows:
 
 ```python
-with CheerLightTwitterAPI(suppress_tweeting=True, suppress_connection=True) as dut:
+with CheerLightTwitterAPI(suppress_connection=True) as dut:
     dut.tweet(colour='orange')
 ```
 

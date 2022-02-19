@@ -77,7 +77,7 @@ class CheerLightTwitterAPI:
         """
         Connect to the Twitter API
         """
-        if self.__supress_connection is not True:
+        if self.__supress_connection is True:
             self.__logger.warning('connecting to twitter is supressed')
         else:
             if os.path.exists('twitter_credentials.json'):
@@ -214,17 +214,21 @@ class CheerLightTwitterAPI:
         :param payload: string to tweet
         :type payload: str
         """
-        if self.__twitter_api is None:
-            raise RuntimeError('Not connected to the twitter API')
-
-        if self.__supress_tweeting is False:
-            #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
-            tweet = self.__twitter_api.update_status(payload)
-
-            self.__logger.info('Tweet Sent')
-        else:
+        if self.__supress_connection is True:
             self.__logger.warning('Tweet was suppressed and not sent')
             tweet = None
+        else:
+            if self.__twitter_api is None:
+                raise RuntimeError('Not connected to the twitter API')
+
+            if self.__supress_tweeting is False:
+                #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
+                tweet = self.__twitter_api.update_status(payload)
+
+                self.__logger.info('Tweet Sent')
+            else:
+                self.__logger.warning('Tweet was suppressed and not sent')
+                tweet = None
 
         return tweet
 
