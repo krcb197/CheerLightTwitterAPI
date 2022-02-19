@@ -145,6 +145,47 @@ with CheerLightTwitterAPI(user_template_dir='custom_templates',
 ```
 This will create a tweet with the following payload: `@cheerlights orange from Bob`
 
+As well as items that are populated into the template when the object is initialised, it is 
+also possible to have context inserted when the tweet is generated
+
+Consider the following template
+
+```jinja
+@cheerlights {{ colour }} from {{ user }} to {{ other_user }}
+```
+
+```python
+custom_context = {
+        'user' : 'Bob'
+    }
+
+with CheerLightTwitterAPI(user_template_dir='custom_templates',
+                            user_template_context=custom_context) as dut:
+    dut.tweet(colour='orange', jinja_context={'other_user': 'Alice'})
+    dut.tweet(colour='orange', jinja_context={'other_user': 'Jennie'})
+```
+
+This will create a tweet with the following payloads:
+- `@cheerlights orange from Bob to Alice`
+- `@cheerlights orange from Bob to Jennie`
+
+The custom context is not limited to strings, any data type support by Jinja rendering will work
+
+```python
+custom_context = {
+        'user' : 'Bob'
+    }
+
+with CheerLightTwitterAPI(user_template_dir='custom_templates',
+                            user_template_context=custom_context) as dut:
+    dut.tweet(colour='orange', jinja_context={'other_user': 99})
+    dut.tweet(colour='orange', jinja_context={'other_user': 101})
+```
+
+This will create a tweet with the following payloads:
+- `@cheerlights orange from Bob to 99`
+- `@cheerlights orange from Bob to 101`
+
 # Development and Testing
 
 During Development, it may be useful to stop:
