@@ -4,10 +4,33 @@ from typing import Union
 from random import randint
 
 import pytest
+from pytest_mock import mocker
 import sys
 
 from src.cheer_lights_twitter_api import CheerLightTwitterAPI
 from src.cheer_lights_twitter_api import CheerLightColours
+
+@pytest.fixture()
+def mocked_tweepy(mocker):
+
+    tweepy_api_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.API')
+    tweepy_auth_handler_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.OAuth1UserHandler')
+
+    yield {'tweepy_api_patch':tweepy_api_patch,
+           'tweepy_auth_handler_patch' : tweepy_auth_handler_patch}
+
+def test_tweet_unit_test(mocked_tweepy):
+    """
+    test that the tweets are made using a mock tweepy
+    """
+
+    dut = CheerLightTwitterAPI()
+    dut.connect()
+    mocked_tweepy['tweepy_api_patch'].reset_mock()
+    dut.tweet('blue')
+    mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_called_once_with('@cheerlights blue')
+    mocked_tweepy['tweepy_api_patch'].reset_mock()
+    dut.disconnect()
 
 
 def test_tweet_payload():
