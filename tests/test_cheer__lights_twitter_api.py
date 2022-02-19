@@ -167,11 +167,14 @@ def test_tweet():
 
             self.last_random_value = 0
 
-        def tweet_payload(self, colour: Union[CheerLightColours, str]) -> str:
+        def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
 
             self.last_random_value = randint(0, 2**32)
 
             self.verify_colour(colour)
+
+            if jinja_context is not None:
+                raise NotImplementedError('jinja context is not supported')
 
             # build message using a jinga template
             if isinstance(colour, str):

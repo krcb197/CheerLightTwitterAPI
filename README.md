@@ -102,10 +102,13 @@ from typing import Union
 
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
-    def tweet_payload(self, colour: Union[CheerLightColours, str]) -> str:
+    def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
        
         #type check the colour parameter
         self.verify_colour(colour)
+        
+        if jinja_context is not None:
+            raise NotImplementedError('jinja context is not supported')
 
         # build message using a jinga template
         if isinstance(colour, str):
