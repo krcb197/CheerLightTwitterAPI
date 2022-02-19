@@ -4,20 +4,10 @@ from typing import Union
 from random import randint
 
 import pytest
-from pytest_mock import mocker
 import sys
 
 from src.cheer_lights_twitter_api import CheerLightTwitterAPI
 from src.cheer_lights_twitter_api import CheerLightColours
-
-@pytest.fixture()
-def mocked_tweepy(mocker):
-
-    tweepy_api_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.API')
-    tweepy_auth_handler_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.OAuth1UserHandler')
-
-    yield {'tweepy_api_patch':tweepy_auth_handler_patch,
-           'tweepy_auth_handler_patch' :tweepy_auth_handler_patch}
 
 
 def test_tweet_payload():
@@ -33,7 +23,6 @@ def test_tweet_payload():
 
     payload = dut.tweet_payload(colour=CheerLightColours.BLUE)
     assert payload == '@cheerlights blue'
-
 
     payload = dut.tweet_payload(colour=CheerLightColours.RED)
     assert payload == '@cheerlights red'
