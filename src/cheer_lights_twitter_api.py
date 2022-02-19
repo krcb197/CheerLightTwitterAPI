@@ -5,7 +5,7 @@ import argparse
 from enum import IntEnum
 import logging
 import logging.config
-from typing import Optional, Union
+from typing import Optional, Union, Dict, Any
 import os
 import json
 
@@ -166,7 +166,8 @@ class CheerLightTwitterAPI:
             if colour.upper() not in CheerLightColours.__members__:
                 raise ValueError(f'{colour} is not a legal colour to choose')
 
-    def tweet_payload(self, colour: Union[CheerLightColours, str]) -> str:
+    def tweet_payload(self, colour: Union[CheerLightColours, str],
+                      jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
         :param colour: colour
@@ -187,13 +188,16 @@ class CheerLightTwitterAPI:
             'colour': colour_str
         }
         context.update(self.__user_template_context)
+        if jinja_context is not None:
+            context.update(jinja_context)
         template = self.jj_env.get_template("tweet.jinja")
 
         tweet_content = template.render(context)
 
         return tweet_content
 
-    def tweet(self, colour: Union[CheerLightColours, str]) -> Optional[TweepyStatus]:
+    def tweet(self, colour: Union[CheerLightColours, str],
+              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
         """
 
         :param colour: colour to include in the tweet
@@ -202,7 +206,7 @@ class CheerLightTwitterAPI:
 
         self.verify_colour(colour)
 
-        tweet_content = self.tweet_payload(colour)
+        tweet_content = self.tweet_payload(colour, jinja_context)
 
         self.__logger.info(f'Built Tweet: {tweet_content}')
 

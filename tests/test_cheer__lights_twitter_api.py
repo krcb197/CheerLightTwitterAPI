@@ -94,13 +94,13 @@ def test_tweet_payload():
         payload = dut.tweet_payload(colour=colour)
         assert payload == f'@cheerlights {colour.name.lower()}'
 
-def test_custom_template():
+def test_custom_template_with_static_context():
     """
     test overloading the jinja template with a custom template
     """
 
     file_path = os.path.dirname(__file__)
-    custom_templates = os.path.join(file_path, 'custom_template')
+    custom_templates = os.path.join(file_path, 'custom_template_static_context')
 
     custom_context = {
         'user' : 'Bob'
@@ -111,6 +111,44 @@ def test_custom_template():
     # no need to connect to just test the payload generation
     payload = dut.tweet_payload(colour='orange')
     assert payload == '@cheerlights orange from Bob'
+
+def test_custom_template_with_dynamic_context():
+    """
+    test overloading the jinja template with a custom template
+    """
+
+    file_path = os.path.dirname(__file__)
+    custom_templates = os.path.join(file_path, 'custom_template_dynamic_context')
+
+    dut = CheerLightTwitterAPI(user_template_dir=custom_templates)
+    # no need to connect to just test the payload generation
+    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user':'Alice'})
+    assert payload == '@cheerlights orange to Alice'
+    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
+    assert payload == '@cheerlights orange to Jennie'
+
+
+def test_custom_template_with_static_and_dynamic_context():
+    """
+    test overloading the jinja template with a custom template
+    """
+
+    file_path = os.path.dirname(__file__)
+    custom_templates = os.path.join(file_path, 'custom_template_dynamic_and_static_context')
+
+    custom_context = {
+        'user': 'Bob'
+    }
+
+    dut = CheerLightTwitterAPI(user_template_dir=custom_templates,
+                               user_template_context=custom_context)
+    # no need to connect to just test the payload generation
+    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Alice'})
+    assert payload == '@cheerlights orange from Bob to Alice'
+    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
+    assert payload == '@cheerlights orange from Bob to Jennie'
+    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 99})
+    assert payload == '@cheerlights orange from Bob to 99'
 
 @pytest.mark.integration_test
 def test_tweet():
@@ -129,11 +167,14 @@ def test_tweet():
 
             self.last_random_value = 0
 
-        def tweet_payload(self, colour: Union[CheerLightColours, str]) -> str:
+        def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
 
             self.last_random_value = randint(0, 2**32)
 
             self.verify_colour(colour)
+
+            if jinja_context is not None:
+                raise NotImplementedError('jinja context is not supported')
 
             # build message using a jinga template
             if isinstance(colour, str):
