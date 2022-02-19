@@ -63,6 +63,7 @@ def test_custom_template():
     payload = dut.tweet_payload(colour='orange')
     assert payload == '@cheerlights orange from Bob'
 
+@pytest.mark.integration_test
 def test_tweet():
     """
     test sending a tweet, we will not actually send a tweet to @cheerlights by overloading the
