@@ -80,17 +80,24 @@ class CheerLightTwitterAPI:
         if self.__supress_connection is True:
             self.__logger.warning('connecting to twitter is supressed')
         else:
-            if os.path.exists('twitter_credentials.json'):
+            if os.path.exists('consumer_twitter_credentials.json'):
 
                 self.__logger.info('connecting to twitter with file credentials')
 
-                with open("twitter_credentials.json", "r", encoding='utf-8') as file:
+                with open("consumer_twitter_credentials.json", "r", encoding='utf-8') as file:
                     creds = json.load(file)
 
-                twitter_consumer_key = creds['CONSUMER_KEY']
-                twitter_consumer_secret = creds['CONSUMER_SECRET']
-                twitter_access_token = creds['ACCESS_TOKEN']
-                twitter_access_secret = creds['ACCESS_SECRET']
+                    twitter_consumer_key = creds['CONSUMER_KEY']
+                    twitter_consumer_secret = creds['CONSUMER_SECRET']
+
+                if self.__generate_access_token is False:
+
+                    # If the access token is not to be generated it must be read from a file
+                    with open("access_twitter_credentials.json", "r", encoding='utf-8') as file:
+                        creds = json.load(file)
+
+                        twitter_access_token = creds['ACCESS_TOKEN']
+                        twitter_access_secret = creds['ACCESS_SECRET']
 
             else:
 
@@ -108,12 +115,57 @@ class CheerLightTwitterAPI:
                 twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
                 twitter_access_secret = os.environ.get("TWITTER_ACCESS_SECRET")
 
-            auth = tweepy.OAuth1UserHandler(consumer_key=twitter_consumer_key,
-                                            consumer_secret=twitter_consumer_secret)
+                if self.__generate_access_token is True:
+                    raise RuntimeError('generation of access tokens is not supported with '
+                                       'environment variable mode')
+
+            if self.__generate_access_token is True:
+                auth = tweepy.OAuthHandler(consumer_key=twitter_consumer_key,
+                                                consumer_secret=twitter_consumer_secret,
+                                                callback='oob')
+
+                auth_url = auth.get_authorization_url()
+                print('Authorization URL: ' + auth_url)
+
+                # ask user to verify the PIN generated in broswer
+                verifier = input('PIN: ').strip()
+                auth.get_access_token(verifier)
+
+                if os.path.exists('access_twitter_credentials.json'):
+                    confirm = input('overwite access_twitter_credentials.json '
+                                    'file [Y/N]').strip().upper()
+                    if confirm == 'Y':
+                        with open("access_twitter_credentials.json", "w",
+                                  encoding='utf-8') as file:
+                            json.dump({'ACCESS_TOKEN': auth.access_token,
+                                       'ACCESS_SECRET': auth.access_token_secret }, file)
+
+                        twitter_access_token = auth.access_token
+                        twitter_access_secret = auth.access_token_secret
+                    elif confirm == 'N':
+                        print('using the access token but not overwriting the file')
+
+                        twitter_access_token = auth.access_token
+                        twitter_access_secret = auth.access_token_secret
+
+                    else:
+                        raise RuntimeError('Unhandled choice {confirm}')
+
+                auth.set_access_token(key=twitter_access_token,
+                                      secret=twitter_access_secret)
+            else:
+                auth = tweepy.OAuth1UserHandler(consumer_key=twitter_consumer_key,
+                                                consumer_secret=twitter_consumer_secret)
+
             auth.set_access_token(key=twitter_access_token,
                                   secret=twitter_access_secret)
 
             self.__twitter_api = tweepy.API(auth)
+
+            user = self.__twitter_api.verify_credentials()
+
+            self.__logger.info(f'Twitter API access confirmed for {user.name} (@{user.screen_name})')
+
 
     def disconnect(self) -> None:
         """
@@ -249,6 +301,8 @@ parser.add_argument('--suppress_tweeting', '-s', dest='suppress_tweeting', actio
                          'this is useful for testing')
 parser.add_argument('--supress_connection', '-c', dest='supress_connection', action='store_true',
                     help='Does not connect to the twitter API, this is useful for testing')
+parser.add_argument('--generate_access', '-g', dest='generate_access', action='store_true',
+                    help='generate the user access token via a web confirmation')
 
 if __name__ == "__main__":
 
@@ -287,6 +341,7 @@ if __name__ == "__main__":
         logging.config.dictConfig(LOGGING_CONFIG)
 
     cheer_lights = CheerLightTwitterAPI(suppress_tweeting=command_args.suppress_tweeting,
-                                        suppress_connection=command_args.supress_connection)
+                                        suppress_connection=command_args.supress_connection,
+                                        generate_access=command_args.generate_access)
     cheer_lights.connect()
     tweet_sent = cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])

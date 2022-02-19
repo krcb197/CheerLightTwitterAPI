@@ -15,20 +15,55 @@ pip install -r requirements.txt
 
 # Preparation
 
-In order to use this library you will need twitter API keys, [How to get access to the Twitter API](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
+In order to use this library you will need twitter API keys
 
 > :warning: **WARNING**: Please be careful not to expose Twitter API keys. **DO NOT** share them with other people or upload them to a cloud repository without care 
 
+The twitter access keys are split into two parts:
+
+| Syntax      | Description                                        |
+| ----------- | -------------------------------------------------- |
+| Consumer    | These are the credentials for the application      |
+| Access      | These are the credentials for the user             |
+
 These are then accessed by the class in one of two ways (in this order of priority):
 
-1. A file called ```twitter_credentials.json``` which is in the working directory (this is not 
-   stored into GitHub), refer to ```example_twitter_credentials.json``` for the example format
+1. A file called ```consumer_twitter_credentials.json``` and ```access_twitter_credentials.json``` 
+   which is in the working directory (this is not  stored into GitHub), refer to
+   ```example_consumer_twitter_credentials.json``` and 
+   ```example_access_twitter_credentials.json``` for the example format
 2. Via the following four environment variables, this is the recommended way to pass keys within a
    cloud environment e.g. GitHub from the repository secrets:
       - ```TWITTER_API_KEY```
       - ```TWITTER_API_SECRET```
       - ```TWITTER_ACCESS_TOKEN```
       - ```TWITTER_ACCESS_SECRET```
+
+There are two methods to get these keys:
+1. Set up a Twitter Developer Account and generate a complete set of keys, see, 
+   [How to get access to the Twitter API](https://developer.twitter.com/en/docs/twitter-api/getting-started/getting-access-to-the-twitter-api)
+2. Obtain the consumer keys from someone who already has configured an application. Then generate 
+   the access Keys for your own Twitter account
+
+The easiest way to generate the access keys is as follows: 
+
+1. Run the command line application with the ```-g``` command line option (a coloru is still needed):  
+   ```bash
+   python -m src.cheer_lights_twitter_api purple -g
+   ```
+2. This will provide a weblink in the console and the option to enter a PIN (note the link below is not real)
+   ```
+   Authorization URL: https://api.twitter.com/oauth/authorize?oauth_token=xxxxxxxxx
+   PIN:
+   ```
+   Copy this link to a webbrowser
+3. The Webbrowser should look like this:
+   ![ApproveTwitterAccess](docs/ApproveTwitterAccess.PNG)
+   If you agree by selecting _Authorise app_ it will take you to a screen showing a PIN number
+   which must be typed into the python console. 
+4. After entering it you will be given the choice to write the access key to a file. If you don't
+   it will be only used for the one session. IF you Confirm and write it to a file next time you 
+   can drop the ```-g``` command line switch
 
 # Usage
 
