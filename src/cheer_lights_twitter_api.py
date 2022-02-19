@@ -10,6 +10,8 @@ import os
 import json
 
 import tweepy
+from tweepy.models import Status as TweepyStatus
+from tweepy.models import ResultSet as TweepyResultSet
 import jinja2 as jj
 
 file_path = os.path.dirname(__file__)
@@ -44,6 +46,8 @@ class CheerLightTwitterAPI:
 
         user_template_dir = kwargs.pop("user_template_dir", None)
         self.__user_template_context = kwargs.pop("user_template_context", {})
+        self.__supress_tweeting = kwargs.pop("suppress_tweeting", False)
+        self.__supress_connection = kwargs.pop("suppress_connection", False)
 
         if user_template_dir:
             loader = jj.ChoiceLoader([
@@ -73,40 +77,43 @@ class CheerLightTwitterAPI:
         """
         Connect to the Twitter API
         """
-        if os.path.exists('twitter_credentials.json'):
-
-            self.__logger.info('connecting to twitter with file credentials')
-
-            with open("twitter_credentials.json", "r", encoding='utf-8') as file:
-                creds = json.load(file)
-
-            twitter_consumer_key = creds['CONSUMER_KEY']
-            twitter_consumer_secret = creds['CONSUMER_SECRET']
-            twitter_access_token = creds['ACCESS_TOKEN']
-            twitter_access_secret = creds['ACCESS_SECRET']
-
+        if self.__supress_connection is True:
+            self.__logger.warning('connecting to twitter is supressed')
         else:
+            if os.path.exists('twitter_credentials.json'):
 
-            self.__logger.info('connecting to twitter with environmental variable credentials')
+                self.__logger.info('connecting to twitter with file credentials')
 
-            # check for enviromental variables
-            for var in ['TWITTER_API_KEY', "TWITTER_API_SECRET",
-                        "TWITTER_ACCESS_SECRET",
-                        "TWITTER_ACCESS_SECRET" ]:
-                if var not in os.environ:
-                    self.__logger.error(f'enviroment variable {var} not present')
+                with open("twitter_credentials.json", "r", encoding='utf-8') as file:
+                    creds = json.load(file)
 
-            twitter_consumer_key = os.environ.get("TWITTER_API_KEY")
-            twitter_consumer_secret = os.environ.get("TWITTER_API_SECRET")
-            twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
-            twitter_access_secret = os.environ.get("TWITTER_ACCESS_SECRET")
+                twitter_consumer_key = creds['CONSUMER_KEY']
+                twitter_consumer_secret = creds['CONSUMER_SECRET']
+                twitter_access_token = creds['ACCESS_TOKEN']
+                twitter_access_secret = creds['ACCESS_SECRET']
 
-        auth = tweepy.OAuth1UserHandler(consumer_key=twitter_consumer_key,
-                                        consumer_secret=twitter_consumer_secret)
-        auth.set_access_token(key=twitter_access_token,
-                              secret=twitter_access_secret)
+            else:
 
-        self.__twitter_api = tweepy.API(auth)
+                self.__logger.info('connecting to twitter with environmental variable credentials')
+
+                # check for enviromental variables
+                for var in ['TWITTER_API_KEY', "TWITTER_API_SECRET",
+                            "TWITTER_ACCESS_SECRET",
+                            "TWITTER_ACCESS_SECRET" ]:
+                    if var not in os.environ:
+                        self.__logger.error(f'enviroment variable {var} not present')
+
+                twitter_consumer_key = os.environ.get("TWITTER_API_KEY")
+                twitter_consumer_secret = os.environ.get("TWITTER_API_SECRET")
+                twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+                twitter_access_secret = os.environ.get("TWITTER_ACCESS_SECRET")
+
+            auth = tweepy.OAuth1UserHandler(consumer_key=twitter_consumer_key,
+                                            consumer_secret=twitter_consumer_secret)
+            auth.set_access_token(key=twitter_access_token,
+                                  secret=twitter_access_secret)
+
+            self.__twitter_api = tweepy.API(auth)
 
     def disconnect(self) -> None:
         """
@@ -120,17 +127,25 @@ class CheerLightTwitterAPI:
         return self
 
     @property
-    def __screen_name(self) -> str:
-        return self.__twitter_api.get_settings()['screen_name']  # type: ignore
-
-    @property
-    def last_tweet_text(self) -> str:
+    def last_tweet(self) -> TweepyResultSet:
         """
         retrieve the text of the last tweet sent, this is useful for doing a round trip test
         """
-        tweet = self.__twitter_api.user_timeline(screen_name=self.__screen_name, # type: ignore
-                                                 count=1) # type: ignore
-        return tweet[0].text # type: ignore
+        if self.__twitter_api is None:
+            raise RuntimeError('Twitter API not connected')
+
+        tweet = self.__twitter_api.user_timeline(count=1)
+        return tweet
+
+    def tweets_since(self, since_id, count) -> TweepyResultSet:
+        """
+        retrieve the text of the last tweet sent, this is useful for doing a round trip test
+        """
+        if self.__twitter_api is None:
+            raise RuntimeError('Twitter API not connected')
+
+        tweet = self.__twitter_api.user_timeline(since_id=since_id, count=count)
+        return tweet
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
@@ -178,7 +193,7 @@ class CheerLightTwitterAPI:
 
         return tweet_content
 
-    def tweet(self, colour: Union[CheerLightColours, str]) -> None:
+    def tweet(self, colour: Union[CheerLightColours, str]) -> Optional[TweepyStatus]:
         """
 
         :param colour: colour to include in the tweet
@@ -191,20 +206,31 @@ class CheerLightTwitterAPI:
 
         self.__logger.info(f'Built Tweet: {tweet_content}')
 
-        self.send_tweet(payload=tweet_content)
+        return self.send_tweet(payload=tweet_content)
 
-    def send_tweet(self, payload: str) -> None:
+    def send_tweet(self, payload: str) -> Optional[TweepyStatus]:
         """
         Send a tweet with the payload provided
         :param payload: string to tweet
         :type payload: str
         """
-        if self.__twitter_api is None:
-            raise RuntimeError('Not connected to the twitter API')
+        if self.__supress_connection is True:
+            self.__logger.warning('Tweet was suppressed and not sent')
+            tweet = None
+        else:
+            if self.__twitter_api is None:
+                raise RuntimeError('Not connected to the twitter API')
 
-        self.__twitter_api.update_status(payload)
+            if self.__supress_tweeting is False:
+                #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
+                tweet = self.__twitter_api.update_status(payload)
 
-        self.__logger.info('Tweet Sent')
+                self.__logger.info('Tweet Sent')
+            else:
+                self.__logger.warning('Tweet was suppressed and not sent')
+                tweet = None
+
+        return tweet
 
 
 parser = argparse.ArgumentParser(description='Python Code to generate a CheerLights Tweet',
@@ -212,7 +238,13 @@ parser = argparse.ArgumentParser(description='Python Code to generate a CheerLig
                                         'for more details')
 parser.add_argument('colour', type=str,
                     choices=[choice.name.lower() for choice in CheerLightColours])
-parser.add_argument('--verbose', '-v', dest='verbose', action='store_true')
+parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
+                    help='All the logging information will be shown in the console')
+parser.add_argument('--suppress_tweeting', '-s', dest='suppress_tweeting', action='store_true',
+                    help='Makes the connection to twitter but will suppress any update status, '
+                         'this is useful for testing')
+parser.add_argument('--supress_connection', '-c', dest='supress_connection', action='store_true',
+                    help='Does not connect to the twitter API, this is useful for testing')
 
 if __name__ == "__main__":
 
@@ -250,6 +282,7 @@ if __name__ == "__main__":
         }
         logging.config.dictConfig(LOGGING_CONFIG)
 
-    cheer_lights = CheerLightTwitterAPI()
+    cheer_lights = CheerLightTwitterAPI(suppress_tweeting=command_args.suppress_tweeting,
+                                        suppress_connection=command_args.supress_connection)
     cheer_lights.connect()
-    cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])
+    tweet_sent = cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])
