@@ -123,10 +123,6 @@ class CheerLightTwitterAPI:
         return self
 
     @property
-    def __screen_name(self) -> str:
-        return self.__twitter_api.get_settings()['screen_name']  # type: ignore
-
-    @property
     def last_tweet(self) -> TweepyResultSet:
         """
         retrieve the text of the last tweet sent, this is useful for doing a round trip test
@@ -271,4 +267,4 @@ if __name__ == "__main__":
 
     cheer_lights = CheerLightTwitterAPI(suppress_tweeting=command_args.suppress_tweeting)
     cheer_lights.connect()
-    cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])
+    tweet_sent = cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])

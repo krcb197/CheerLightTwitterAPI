@@ -142,16 +142,28 @@ def test_tweet():
         dut.tweet('red')
 
     dut.connect()
-    dut.tweet('blue')
-    assert dut.last_tweet_text.startswith(f'test tweet blue with random value '
-                                          f'{dut.last_random_value:d}')
+    last_tweets = dut.last_tweet
+    session_start_max_id = last_tweets.max_id
+
+    tweet_sent = dut.tweet('blue')
+    tweets = dut.tweets_since(since_id=session_start_max_id, count=10)
+    for tweet in tweets:
+        if tweet.id == tweet_sent.id:
+            break
+    else:
+        assert False
     dut.disconnect()
 
     # test in a context manager
     with TestCheerLightTwitterAPI() as alt_dut:
         alt_dut.tweet(CheerLightColours.GREEN)
-        assert alt_dut.last_tweet_text.startswith(f'test tweet green with random value '
-                                                  f'{alt_dut.last_random_value:d}')
+        tweets = alt_dut.tweets_since(since_id=session_start_max_id, count=10)
+        for tweet in tweets:
+            if tweet.id == tweet_sent.id:
+                break
+        else:
+            assert False
+
 
 
 
