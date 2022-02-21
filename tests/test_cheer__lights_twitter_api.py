@@ -4,27 +4,18 @@ from typing import Union
 from random import randint
 
 import pytest
-from pytest_mock import mocker
 import sys
 
-from src.cheer_lights_twitter_api import CheerLightTwitterAPI
-from src.cheer_lights_twitter_api import CheerLightColours
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+from cheer_lights_twitter_api import CheerLightColours
 
-@pytest.fixture()
-def mocked_tweepy(mocker):
-
-    tweepy_api_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.API')
-    tweepy_auth_handler_patch = mocker.patch('src.cheer_lights_twitter_api.tweepy.OAuth1UserHandler')
-
-    yield {'tweepy_api_patch':tweepy_api_patch,
-           'tweepy_auth_handler_patch' : tweepy_auth_handler_patch}
 
 def test_tweet_unit_test(mocked_tweepy):
     """
     test that the tweets are made using a mock tweepy
     """
 
-    dut = CheerLightTwitterAPI()
+    dut = CheerLightTwitterAPI(key_path='..')  # the path should never get used
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.tweet('blue')
@@ -36,7 +27,7 @@ def test_supressed_tweet_unit_test(mocked_tweepy):
     """
     test that the tweets are not made id the suppress_tweeting option is selected
     """
-    dut = CheerLightTwitterAPI(suppress_tweeting=True)
+    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True)
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.tweet('blue')
@@ -48,7 +39,7 @@ def test_supressed_connection_unit_test(mocked_tweepy):
     """
     test that the tweets are not made id the suppress_tweeting option is selected
     """
-    dut = CheerLightTwitterAPI(suppress_tweeting=True, suppress_connection=True)
+    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True, suppress_connection=True)
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].assert_not_called()
@@ -63,7 +54,7 @@ def test_tweet_payload():
     """
     test that the tweets are correctly formed with the base template
     """
-    dut = CheerLightTwitterAPI()
+    dut = CheerLightTwitterAPI(key_path='illegal_path')  # the path should never get used
     # no need to connect to just test the payload generation
 
     # check a few manually
@@ -106,7 +97,8 @@ def test_custom_template_with_static_context():
         'user' : 'Bob'
     }
 
-    dut = CheerLightTwitterAPI(user_template_dir=custom_templates,
+    dut = CheerLightTwitterAPI(key_path='illegal_path',  # the path should never get used
+                               user_template_dir=custom_templates,
                                user_template_context=custom_context)
     # no need to connect to just test the payload generation
     payload = dut.tweet_payload(colour='orange')
@@ -120,7 +112,8 @@ def test_custom_template_with_dynamic_context():
     file_path = os.path.dirname(__file__)
     custom_templates = os.path.join(file_path, 'custom_template_dynamic_context')
 
-    dut = CheerLightTwitterAPI(user_template_dir=custom_templates)
+    dut = CheerLightTwitterAPI(key_path='illegal_path',  # the path should never get used
+                               user_template_dir=custom_templates)
     # no need to connect to just test the payload generation
     payload = dut.tweet_payload(colour='orange', jinja_context={'other_user':'Alice'})
     assert payload == '@cheerlights orange to Alice'
@@ -140,7 +133,8 @@ def test_custom_template_with_static_and_dynamic_context():
         'user': 'Bob'
     }
 
-    dut = CheerLightTwitterAPI(user_template_dir=custom_templates,
+    dut = CheerLightTwitterAPI(key_path='illegal_path',  # the path should never get used
+                               user_template_dir=custom_templates,
                                user_template_context=custom_context)
     # no need to connect to just test the payload generation
     payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Alice'})
@@ -163,7 +157,8 @@ def test_tweet():
         """
 
         def __init__(self):
-            super().__init__()
+
+            super().__init__(key_path='..')
 
             self.last_random_value = 0
 

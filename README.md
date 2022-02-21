@@ -51,7 +51,7 @@ The easiest way to generate the access keys is as follows:
 
 1. Run the command line application with the ```-g``` command line option (a coloru is still needed):  
    ```bash
-   python -m src.cheer_lights_twitter_api purple -g
+   python -m cheer_lights purple -g
    ```
 2. This will provide a weblink in the console and the option to enter a PIN (note the link below is not real)
    ```
@@ -77,11 +77,11 @@ The file can be called usin the command line:
 
 For example to generate a tweet with the color red
 ```bash
-python cheer_lights_twitter_api.py red
+python -m cheer_lights red -g
 ```
 The command line help has the full list of colour and other options
 ```bash
-python cheer_lights_twitter_api.py -h
+python -m cheer_lights -h
 ```
 
 ## As a Python class
@@ -92,6 +92,7 @@ There are two ways to use the class:
   another class )
 
 ### Context Manager Example
+
 ```python
 # import the colour enum
 from cheer_lights_twitter_api import CheerLightColours
@@ -99,11 +100,12 @@ from cheer_lights_twitter_api import CheerLightColours
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 
 with CheerLightTwitterAPI() as cheer_lights:
-    cheer_lights.tweet(CheerLightColours[CheerLightColours.RED])
+   cheer_lights.tweet(CheerLightColours[CheerLightColours.RED])
 
 ```
 
 ### Manual Connect / Disconnect
+
 ```python
 # import the colour enum
 from cheer_lights_twitter_api import CheerLightColours
@@ -124,7 +126,9 @@ The payload of the tweet is constructed using [Jinja](https://jinja.palletsproje
 this is a templating language used in many web engines, it allows the payload of the tweet to
 be changed without needing to edit the core code.
 
-The payload can be edited by changing the the ```tweet.jinga``` file in the src.templates
+The payload can be edited by changing the the ```tweet.jinga``` file in the cheer_lights_twitter_api.templates
+
+
 
 However, if you want to change the template without changing the code from the repository you 
 can do one of the following:
@@ -132,30 +136,34 @@ can do one of the following:
 ## Derived Class
 
 Build a derived class from the ```CheerLightTwitterAPI``` and overload the ```tweet_payload```
-method. At this poitn you are bypassing the all the jinja templates
+method. At this point you are bypassing the all the jinja templates
 
 ```python
 from typing import Union
 
+from cheer_lights_twitter_api import CheerLightColours
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
+
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
-    def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
-       
-        #type check the colour parameter
-        self.verify_colour(colour)
-        
-        if jinja_context is not None:
-            raise NotImplementedError('jinja context is not supported')
+   def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
 
-        # build message using a jinga template
-        if isinstance(colour, str):
-            colour_str = colour
-        elif isinstance(colour, CheerLightColours):
-            colour_str = colour.name.lower()
-        else:
-            raise RuntimeError('unhandled colour type')
-       
-        return f'My tweet {colour_str}'
+      # type check the colour parameter
+      self.verify_colour(colour)
+
+      if jinja_context is not None:
+         raise NotImplementedError('jinja context is not supported')
+
+      # build message using a jinga template
+      if isinstance(colour, str):
+         colour_str = colour
+      elif isinstance(colour, CheerLightColours):
+         colour_str = colour.name.lower()
+      else:
+         raise RuntimeError('unhandled colour type')
+
+      return f'My tweet {colour_str}'
 ```
 
 ## User Jinja template
@@ -175,13 +183,15 @@ In this case the ```CheerLightTwitterAPI``` is then created with a new context w
 the jinja context with a new parameter called ```user```
 
 ```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
 custom_context = {
-        'user' : 'Bob'
-    }
+   'user': 'Bob'
+}
 
 with CheerLightTwitterAPI(user_template_dir='custom_templates',
-                            user_template_context=custom_context) as dut:
-    dut.tweet(colour='orange')
+                          user_template_context=custom_context) as dut:
+   dut.tweet(colour='orange')
 ```
 This will create a tweet with the following payload: `@cheerlights orange from Bob`
 
@@ -195,14 +205,16 @@ Consider the following template
 ```
 
 ```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
 custom_context = {
-        'user' : 'Bob'
-    }
+   'user': 'Bob'
+}
 
 with CheerLightTwitterAPI(user_template_dir='custom_templates',
-                            user_template_context=custom_context) as dut:
-    dut.tweet(colour='orange', jinja_context={'other_user': 'Alice'})
-    dut.tweet(colour='orange', jinja_context={'other_user': 'Jennie'})
+                          user_template_context=custom_context) as dut:
+   dut.tweet(colour='orange', jinja_context={'other_user': 'Alice'})
+   dut.tweet(colour='orange', jinja_context={'other_user': 'Jennie'})
 ```
 
 This will create a tweet with the following payloads:
@@ -212,14 +224,16 @@ This will create a tweet with the following payloads:
 The custom context is not limited to strings, any data type support by Jinja rendering will work
 
 ```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
 custom_context = {
-        'user' : 'Bob'
-    }
+   'user': 'Bob'
+}
 
 with CheerLightTwitterAPI(user_template_dir='custom_templates',
-                            user_template_context=custom_context) as dut:
-    dut.tweet(colour='orange', jinja_context={'other_user': 99})
-    dut.tweet(colour='orange', jinja_context={'other_user': 101})
+                          user_template_context=custom_context) as dut:
+   dut.tweet(colour='orange', jinja_context={'other_user': 99})
+   dut.tweet(colour='orange', jinja_context={'other_user': 101})
 ```
 
 This will create a tweet with the following payloads:
@@ -233,9 +247,12 @@ During Development, it may be useful to stop:
 - Tweets from being generated, because it is annoying deleting them all
 
 This can be avoided as follows:
+
 ```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
 with CheerLightTwitterAPI(suppress_tweeting=True) as dut:
-    dut.tweet(colour='orange')
+   dut.tweet(colour='orange')
 ```
 
 The same thing can be achieved by setting the ```-s``` switch when running from the command line
@@ -243,8 +260,10 @@ The same thing can be achieved by setting the ```-s``` switch when running from 
 Similarly all connections and tweets are suppressed as follows:
 
 ```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+
 with CheerLightTwitterAPI(suppress_connection=True) as dut:
-    dut.tweet(colour='orange')
+   dut.tweet(colour='orange')
 ```
 
 The same thing can be achieved by setting the ```-c``` switch when running from the command line

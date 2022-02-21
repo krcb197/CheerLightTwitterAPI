@@ -32,12 +32,12 @@ jobs:
         pip install pytest-mock
         pip install mypy
         pip install -r requirements.txt;
-    
+
     - name: Lint with pylint
-      run: pylint --rcfile tests/pylint.rc src
+        run: pylint --rcfile tests/pylint.rc cheer_lights_twitter_api
 
     - name: Typing check with mypy
-      run: mypy src --config-file=tests/.mypy.ini
+      run: mypy cheer_lights_twitter_api --config-file=tests/.mypy.ini
         
     - name: Test with pytest
       env: # Or as an environment variable

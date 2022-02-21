@@ -14,3 +14,12 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "integration_test" in item.keywords:
                 item.add_marker(no_integration_test)
+
+@pytest.fixture()
+def mocked_tweepy(mocker):
+
+    tweepy_api_patch = mocker.patch('cheer_lights_twitter_api.tweepy_wrapper.tweepy.API')
+    tweepy_auth_handler_patch = mocker.patch('cheer_lights_twitter_api.tweepy_wrapper.tweepy.OAuth1UserHandler')
+
+    yield {'tweepy_api_patch':tweepy_api_patch,
+           'tweepy_auth_handler_patch' : tweepy_auth_handler_patch}
