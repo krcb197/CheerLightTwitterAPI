@@ -37,7 +37,7 @@ jobs:
         run: pylint --rcfile tests/pylint.rc cheer_lights_twitter_api
 
     - name: Typing check with mypy
-      run: mypy cheer_lights_twitter_api --config-file=tests/.mypy.ini
+        run: mypy cheer_lights_twitter_api --config-file=tests/.mypy.ini
         
     - name: Test with pytest
       env: # Or as an environment variable
