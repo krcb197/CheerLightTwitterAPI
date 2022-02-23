@@ -10,9 +10,7 @@ import logging.config
 from typing import Optional, Union, Dict, Any
 import os
 
-import jinja2 as jj
-
-from .tweepy_wrapper import TweepyWrapper
+from .tweepy_jinja_wrapper import TweepyJinjaWrapper
 from .tweepy_wrapper import TweepyStatus
 
 file_path = os.path.dirname(__file__)
@@ -33,7 +31,7 @@ class CheerLightColours(IntEnum):
     ORANGE = 0xFFA500
     PINK = 0xFFC0CB
 
-class CheerLightTwitterAPI(TweepyWrapper):
+class CheerLightTwitterAPI(TweepyJinjaWrapper):
     """
     Class to sent a tweet to the Cheerlights server
 
@@ -52,36 +50,11 @@ class CheerLightTwitterAPI(TweepyWrapper):
                  generate_access: bool = False):
 
         super().__init__(key_path=key_path,
+                         user_template_dir=user_template_dir,
+                         user_template_context=user_template_context,
                          suppress_tweeting=suppress_tweeting,
                          suppress_connection=suppress_connection,
                          generate_access=generate_access)
-
-        if user_template_context is None:
-            self.__user_template_context = {}
-        else:
-            self.__user_template_context = user_template_context
-
-        if user_template_dir:
-            loader = jj.ChoiceLoader([
-                jj.FileSystemLoader(user_template_dir),
-                jj.FileSystemLoader(os.path.join(file_path, "../cheer_lights_twitter_api/templates")),
-                jj.PrefixLoader({'user': jj.FileSystemLoader(user_template_dir),
-                                 'base': jj.FileSystemLoader(os.path.join(file_path,
-                                                                          "../cheer_lights_twitter_api/templates"))
-                                 },
-                                delimiter=":")
-            ])
-        else:
-            loader = jj.ChoiceLoader([
-                jj.FileSystemLoader(os.path.join(file_path, "../cheer_lights_twitter_api/templates")),
-                jj.PrefixLoader({'base': jj.FileSystemLoader(os.path.join(file_path,
-                                                                          "../cheer_lights_twitter_api/templates"))},
-                                delimiter=":")])
-
-        self.jj_env = jj.Environment(
-            loader=loader,
-            undefined=jj.StrictUndefined
-        )
 
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
@@ -125,12 +98,10 @@ class CheerLightTwitterAPI(TweepyWrapper):
         context = {
             'colour': colour_str
         }
-        context.update(self.__user_template_context)
         if jinja_context is not None:
             context.update(jinja_context)
-        template = self.jj_env.get_template("tweet.jinja")
 
-        tweet_content = template.render(context)
+        tweet_content = super().tweet_payload(jinja_context=context)
 
         return tweet_content
 
