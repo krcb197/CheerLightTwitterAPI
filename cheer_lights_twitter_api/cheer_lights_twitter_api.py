@@ -74,7 +74,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
             if colour.upper() not in CheerLightColours.__members__:
                 raise ValueError(f'{colour} is not a legal colour to choose')
 
-    def tweet_payload(self, colour: Union[CheerLightColours, str],
+    def colour_template_payload(self, colour: Union[CheerLightColours, str],
                       jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
@@ -101,12 +101,12 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
         if jinja_context is not None:
             context.update(jinja_context)
 
-        tweet_content = super().tweet_payload(jinja_context=context)
+        tweet_content = self.template_payload(jinja_context=context)
 
         return tweet_content
 
-    def tweet(self, colour: Union[CheerLightColours, str],
-              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
+    def colour_template_tweet(self, colour: Union[CheerLightColours, str],
+                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
         """
 
         :param colour: colour to include in the tweet
@@ -115,11 +115,8 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
                               the context generated within the function itself
         :return:
         """
+        payload = self.colour_template_payload(colour=colour, jinja_context=jinja_context)
 
-        self.verify_colour(colour)
+        self.__logger.debug(f'tweet prepared: {payload}')
 
-        tweet_content = self.tweet_payload(colour, jinja_context)
-
-        self.__logger.info(f'Built Tweet: {tweet_content}')
-
-        return super().tweet(payload=tweet_content)
+        return super().tweet(payload=payload)

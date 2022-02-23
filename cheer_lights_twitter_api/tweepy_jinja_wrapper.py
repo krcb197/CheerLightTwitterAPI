@@ -69,7 +69,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
 
-    def tweet_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
+    def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
         :param jinja_context: a dictionary containing the jinja context to use with the template
@@ -88,9 +88,9 @@ class TweepyJinjaWrapper(TweepyWrapper):
 
         return tweet_content
 
-    def tweet(self, jinja_context: Optional[Dict[str, Any]] = None,
-              payload: Optional[str]= None) -> Optional[TweepyStatus]:
+    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
         """
+        Send a tweet based on a Jinja template
 
 
         :param jinja_context: a dictionary containing the jinja context to use with the template
@@ -98,15 +98,9 @@ class TweepyJinjaWrapper(TweepyWrapper):
                               the context generated within the function itself
         :return:
         """
-        if payload is not None:
-            if not isinstance(payload, str):
-                raise TypeError(f'Payload must be of type str got {type(payload)}')
-
-            return super().tweet(payload=payload)
-
         # if the payload is None then build off the template
-        tweet_content = self.tweet_payload(jinja_context)
+        tweet_content = self.template_payload(jinja_context)
 
         self.__logger.info(f'Built Tweet: {tweet_content}')
 
-        return super().tweet(payload=tweet_content)
+        return self.tweet(payload=tweet_content)

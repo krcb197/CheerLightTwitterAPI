@@ -1,13 +1,14 @@
 import os
-from typing import Union
 
 from random import randint
+import sys
+import time
 
 import pytest
-import sys
 
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 from cheer_lights_twitter_api import CheerLightColours
+from cheer_lights_twitter_api.tweepy_wrapper import TweepyWrapper
 
 
 def test_tweet_unit_test(mocked_tweepy):
@@ -18,10 +19,11 @@ def test_tweet_unit_test(mocked_tweepy):
     dut = CheerLightTwitterAPI(key_path='..')  # the path should never get used
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
-    dut.tweet('blue')
+    dut.colour_template_tweet('blue')
     mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_called_once_with('@cheerlights blue')
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
+
 
 def test_supressed_tweet_unit_test(mocked_tweepy):
     """
@@ -30,7 +32,7 @@ def test_supressed_tweet_unit_test(mocked_tweepy):
     dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True)
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
-    dut.tweet('blue')
+    dut.colour_template_tweet('blue')
     mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_not_called()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
@@ -44,7 +46,7 @@ def test_supressed_connection_unit_test(mocked_tweepy):
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].assert_not_called()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
-    dut.tweet('blue')
+    dut.colour_template_tweet('blue')
     mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_not_called()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
@@ -58,31 +60,31 @@ def test_tweet_payload():
     # no need to connect to just test the payload generation
 
     # check a few manually
-    payload = dut.tweet_payload(colour=CheerLightColours.RED)
+    payload = dut.colour_template_payload(colour=CheerLightColours.RED)
     assert payload == '@cheerlights red'
 
-    payload = dut.tweet_payload(colour=CheerLightColours.BLUE)
+    payload = dut.colour_template_payload(colour=CheerLightColours.BLUE)
     assert payload == '@cheerlights blue'
 
-    payload = dut.tweet_payload(colour=CheerLightColours.RED)
+    payload = dut.colour_template_payload(colour=CheerLightColours.RED)
     assert payload == '@cheerlights red'
 
-    payload = dut.tweet_payload(colour='magenta')
+    payload = dut.colour_template_payload(colour='magenta')
     assert payload == '@cheerlights magenta'
 
-    payload = dut.tweet_payload(colour='orange')
+    payload = dut.colour_template_payload(colour='orange')
     assert payload == '@cheerlights orange'
 
     # check some bad inputs
     with pytest.raises(TypeError):
-        payload = dut.tweet_payload(colour=0xFFFFFF)
+        payload = dut.colour_template_payload(colour=0xFFFFFF)
 
     with pytest.raises(ValueError):
-        payload = dut.tweet_payload(colour='darkblue')
+        payload = dut.colour_template_payload(colour='darkblue')
 
     # loop through all the colours
     for colour in CheerLightColours:
-        payload = dut.tweet_payload(colour=colour)
+        payload = dut.colour_template_payload(colour=colour)
         assert payload == f'@cheerlights {colour.name.lower()}'
 
 def test_custom_template_with_static_context():
@@ -101,7 +103,7 @@ def test_custom_template_with_static_context():
                                user_template_dir=custom_templates,
                                user_template_context=custom_context)
     # no need to connect to just test the payload generation
-    payload = dut.tweet_payload(colour='orange')
+    payload = dut.colour_template_payload(colour='orange')
     assert payload == '@cheerlights orange from Bob'
 
 def test_custom_template_with_dynamic_context():
@@ -115,9 +117,9 @@ def test_custom_template_with_dynamic_context():
     dut = CheerLightTwitterAPI(key_path='illegal_path',  # the path should never get used
                                user_template_dir=custom_templates)
     # no need to connect to just test the payload generation
-    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user':'Alice'})
+    payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user':'Alice'})
     assert payload == '@cheerlights orange to Alice'
-    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
+    payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
     assert payload == '@cheerlights orange to Jennie'
 
 
@@ -137,21 +139,20 @@ def test_custom_template_with_static_and_dynamic_context():
                                user_template_dir=custom_templates,
                                user_template_context=custom_context)
     # no need to connect to just test the payload generation
-    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Alice'})
+    payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user': 'Alice'})
     assert payload == '@cheerlights orange from Bob to Alice'
-    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
+    payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user': 'Jennie'})
     assert payload == '@cheerlights orange from Bob to Jennie'
-    payload = dut.tweet_payload(colour='orange', jinja_context={'other_user': 99})
+    payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user': 99})
     assert payload == '@cheerlights orange from Bob to 99'
 
 @pytest.mark.integration_test
 def test_tweet():
     """
-    test sending a tweet, we will not actually send a tweet to @cheerlights by overloading the
-    tweet payload (which has been tested above)
+    test sending a tweet
     """
 
-    class TestCheerLightTwitterAPI(CheerLightTwitterAPI):
+    class TestTwitterAPI(TweepyWrapper):
         """
         local class with overloaded method
         """
@@ -162,40 +163,29 @@ def test_tweet():
 
             self.last_random_value = 0
 
-        def tweet_payload(self, colour: Union[CheerLightColours, str], jinja_context) -> str:
+        def test_tweet(self) -> str:
 
             self.last_random_value = randint(0, 2**32)
 
-            self.verify_colour(colour)
+            payload = f'test tweet with random value {self.last_random_value:d} on ' \
+                      f'Python {sys.version_info.major}.{sys.version_info.minor}'
 
-            if jinja_context is not None:
-                raise NotImplementedError('jinja context is not supported')
-
-            # build message using a jinga template
-            if isinstance(colour, str):
-                colour_str = colour
-            elif isinstance(colour, CheerLightColours):
-                colour_str = colour.name.lower()
-            else:
-                raise RuntimeError('unhandled colour type')
-
-            # twitter API blocks tweets which are duplicate values so add a random value to
-            # stop this causing an error
-            return f'test tweet {colour_str} with random value {self.last_random_value:d} on ' \
-                   f'Python {sys.version_info.major}.{sys.version_info.minor}'
+            return super().tweet(payload=payload)
 
 
     # test with manual connect disconnect
-    dut = TestCheerLightTwitterAPI()
+    dut = TestTwitterAPI()
 
+    # sending a tweet without connection should create an error
     with pytest.raises(RuntimeError):
-        dut.tweet('red')
+        dut.test_tweet()
 
     dut.connect()
     last_tweets = dut.last_tweet
     session_start_max_id = last_tweets.max_id
 
-    tweet_sent = dut.tweet('blue')
+    tweet_sent = dut.test_tweet()
+    time.sleep(10)
     tweets = dut.tweets_since(since_id=session_start_max_id, count=10)
     for tweet in tweets:
         if tweet.id == tweet_sent.id:
@@ -205,8 +195,9 @@ def test_tweet():
     dut.disconnect()
 
     # test in a context manager
-    with TestCheerLightTwitterAPI() as alt_dut:
-        alt_dut.tweet(CheerLightColours.GREEN)
+    with TestTwitterAPI() as alt_dut:
+        alt_dut.test_tweet()
+        time.sleep(10)
         tweets = alt_dut.tweets_since(since_id=session_start_max_id, count=10)
         for tweet in tweets:
             if tweet.id == tweet_sent.id:

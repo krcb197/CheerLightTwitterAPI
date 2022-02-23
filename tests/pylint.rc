@@ -156,8 +156,6 @@ disable=print-statement,
 
         #additional items for this library
         logging-fstring-interpolation,
-        arguments-differ,
-        arguments-renamed,
         duplicate-code
 
 

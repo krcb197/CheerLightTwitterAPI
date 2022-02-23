@@ -68,4 +68,4 @@ if __name__ == "__main__":
                                         suppress_connection=command_args.supress_connection,
                                         generate_access=command_args.generate_access)
     cheer_lights.connect()
-    tweet_sent = cheer_lights.tweet(CheerLightColours[command_args.colour.upper()])
+    tweet_sent = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
