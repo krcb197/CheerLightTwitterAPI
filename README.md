@@ -49,7 +49,7 @@ There are two methods to get these keys:
 
 The easiest way to generate the access keys is as follows: 
 
-1. Run the command line application with the ```-g``` command line option (a coloru is still needed):  
+1. Run the command line application with the ```-g``` command line option (a colour is still needed):  
    ```bash
    python -m cheer_lights purple -g
    ```
@@ -128,8 +128,6 @@ be changed without needing to edit the core code.
 
 The payload can be edited by changing the the ```tweet.jinga``` file in the cheer_lights_twitter_api.templates
 
-
-
 However, if you want to change the template without changing the code from the repository you 
 can do one of the following:
 
@@ -143,7 +141,6 @@ from typing import Union
 
 from cheer_lights_twitter_api import CheerLightColours
 from cheer_lights_twitter_api import CheerLightTwitterAPI
-
 
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
