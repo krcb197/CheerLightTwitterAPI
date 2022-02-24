@@ -98,6 +98,12 @@ class TweepyJinjaWrapper(TweepyWrapper):
                               the context generated within the function itself
         :return:
         """
+        if payload is not None:
+            if not isinstance(payload, str):
+                raise TypeError(f'Payload must be of type str got {type(payload)}')
+
+            return super().tweet(payload=payload)
+
         # if the payload is None then build off the template
         tweet_content = self.template_payload(jinja_context)
 
