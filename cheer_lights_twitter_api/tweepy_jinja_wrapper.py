@@ -68,7 +68,6 @@ class TweepyJinjaWrapper(TweepyWrapper):
 
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
-
     def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
@@ -98,6 +97,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
                               the context generated within the function itself
         :return:
         """
+
         # if the payload is None then build off the template
         tweet_content = self.template_payload(jinja_context)
 
