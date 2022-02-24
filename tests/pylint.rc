@@ -155,7 +155,8 @@ disable=print-statement,
         comprehension-escape,
 
         #additional items for this library
-        logging-fstring-interpolation
+        logging-fstring-interpolation,
+        duplicate-code
 
 
 # Enable the message, report, category or checker with the given id(s). You can

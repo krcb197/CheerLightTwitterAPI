@@ -35,10 +35,10 @@ jobs:
         pip install -r requirements.txt;
     
     - name: Lint with pylint
-      run: pylint --rcfile tests/pylint.rc src
+      run: pylint --rcfile tests/pylint.rc cheer_lights_twitter_api cheer_lights.py
 
     - name: Typing check with mypy
-      run: mypy src --config-file=tests/.mypy.ini
+      run: mypy cheer_lights_twitter_api cheer_lights.py --config-file=tests/.mypy.ini
         
     - name: Test with pytest
       env: # Or as an environment variable
