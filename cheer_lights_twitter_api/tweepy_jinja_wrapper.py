@@ -61,7 +61,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
                                                                           "../cheer_lights_twitter_api/templates"))},
                                 delimiter=":")])
 
-        self.jj_env = jj.Environment(
+        self.__jj_env = jj.Environment(
             loader=loader,
             undefined=jj.StrictUndefined
         )
@@ -81,7 +81,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
         context.update(self.__user_template_context)
         if jinja_context is not None:
             context.update(jinja_context)
-        template = self.jj_env.get_template("tweet.jinja")
+        template = self.__jj_env.get_template("tweet.jinja")
 
         tweet_content = template.render(context)
 
