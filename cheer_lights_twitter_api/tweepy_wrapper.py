@@ -33,7 +33,10 @@ class TwitterAPIVersion(Enum):
 
 @dataclass
 class Tweet:
-    id : int
+    """
+    Simplified tweet record to harmonise the V1 and V2 API responses
+    """
+    tweet_id : int
     text : str
 
 class TweepyWrapper:
@@ -41,8 +44,13 @@ class TweepyWrapper:
     Class to simply the usage of the Tweepy API
 
     """
+
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(self,
                  **kwargs):
+
+        self.__logger = logging.getLogger(__name__ + '.TweepyWrapper')
 
         if 'key_path' not in kwargs:
             raise ValueError('key path must be in the arguments')
@@ -82,8 +90,6 @@ class TweepyWrapper:
 
         self.__user_id: Optional[int] = None
 
-        self.__logger = logging.getLogger(__name__ + '.TweepyWrapper')
-
     @property
     def __consumer_key_fqfn(self) -> str:
         """
@@ -102,6 +108,11 @@ class TweepyWrapper:
         """
         Connect to the Twitter API
         """
+
+        # whilst reasonable effort must be taken to reduce the branchs, in this case we don't want to expose the keys
+        # outside this method so it has to be accepted
+        # pylint: disable=too-many-branches
+
         def get_keys_from_files(generate_access_token) -> _TwitterAPIKeys:
             with open(self.__consumer_key_fqfn, "r", encoding='utf-8') as file:
                 creds = json.load(file)
@@ -240,11 +251,11 @@ class TweepyWrapper:
         if self.__api_version is TwitterAPIVersion.V1:
             self.__twitter_api = None
         elif self.__api_version is TwitterAPIVersion.V2:
-            user = self.__twitter_client = None
+            self.__twitter_client = None
         else:
             raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
-        self.__user_id: Optional[int] = None
+        self.__user_id = None
 
     def __enter__(self):
         self.connect()
@@ -260,14 +271,14 @@ class TweepyWrapper:
                 raise RuntimeError('Not connected to the twitter API')
             twitter_response = self.__twitter_api.user_timeline(count=count)
             for tweet in twitter_response:
-                tweets.append(Tweet(id=tweet.id, text=tweet.text))
+                tweets.append(Tweet(tweet_id=tweet.id, text=tweet.text))
         elif self.__api_version is TwitterAPIVersion.V2:
             if self.__twitter_client is None:
                 raise RuntimeError('Not connected to the twitter API')
             twitter_response = self.__twitter_client.get_users_tweets(id=self.__user_id, max_results=count,
                                                                       user_auth =True)
             for tweet in twitter_response.data:
-                tweets.append(Tweet(id=int(tweet['id']), text=tweet['text']))
+                tweets.append(Tweet(tweet_id=int(tweet['id']), text=tweet['text']))
         else:
             raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 

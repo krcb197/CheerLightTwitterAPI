@@ -202,7 +202,7 @@ def test_tweet(twitter_api_version):
     time.sleep(10)
     tweets = dut.user_tweets(count=10)
     for tweet in tweets:
-        if tweet.id == tweet_sent_id:
+        if tweet.tweet_id == tweet_sent_id:
             dut.destroy_tweet(tweet_id=tweet.id)
             break
     else:
@@ -215,7 +215,7 @@ def test_tweet(twitter_api_version):
         time.sleep(10)
         tweets = alt_dut.user_tweets(count=10)
         for tweet in tweets:
-            if tweet.id == tweet_sent_id:
+            if tweet.tweet_id == tweet_sent_id:
                 alt_dut.destroy_tweet(tweet_id=tweet.id)
                 break
         else:

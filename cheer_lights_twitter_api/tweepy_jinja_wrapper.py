@@ -28,6 +28,8 @@ class TweepyJinjaWrapper(TweepyWrapper):
     def __init__(self,
                  **kwargs):
 
+        self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
+
         user_template_context = kwargs.pop('user_template_context', None)
         user_template_dir = kwargs.pop('user_template_dir', None)
         super().__init__(**kwargs)
@@ -58,8 +60,6 @@ class TweepyJinjaWrapper(TweepyWrapper):
             loader=loader,
             undefined=jj.StrictUndefined
         )
-
-        self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
     def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
