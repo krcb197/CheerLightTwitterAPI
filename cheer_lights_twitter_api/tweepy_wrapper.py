@@ -10,6 +10,7 @@ from typing import Optional
 import os
 import json
 from dataclasses import dataclass
+from enum import Enum, auto
 
 import tweepy
 from tweepy.models import Status as TweepyStatus
@@ -25,37 +26,51 @@ class _TwitterAPIKeys:
     access_token: Optional[str] = None
     access_secret: Optional[str] = None
 
+class TwitterAPIVersion(Enum):
+    """
+    Version of the Twitter API to use
+    """
+    V2 = auto()
+    V1 = auto()
+
 class TweepyWrapper:
     """
     Class to simply the usage of the Tweepy API
 
-
     """
-
     def __init__(self,
                  key_path: str,
-                 suppress_tweeting: bool = False,
-                 suppress_connection: bool = False,
-                 generate_access: bool = False):
+                 **kwargs):
 
+
+        self.__key_path =key_path
+
+        suppress_tweeting = kwargs.pop('suppress_tweeting', False)
         if not isinstance(suppress_tweeting, bool):
             raise TypeError(f'suppress_tweeting should be of type bool, got {type(suppress_tweeting)}')
-
         self.__suppress_tweeting = suppress_tweeting
 
+        suppress_connection = kwargs.pop('suppress_connection', False)
         if not isinstance(suppress_connection, bool):
             raise TypeError(f'suppress_connection should be of type bool, got {type(suppress_connection)}')
-
         self.__suppress_connection = suppress_connection
 
+        generate_access = kwargs.pop('generate_access', False)
         if not isinstance(generate_access, bool):
             raise TypeError(f'generate_access should be of type bool, got {type(generate_access)}')
-
         self.__generate_access_token = generate_access
 
-        self.__key_path = key_path
+        api_version = kwargs.pop('api_version', TwitterAPIVersion.V2)
+        if not isinstance(api_version, TwitterAPIVersion):
+            raise TypeError(f'api_Version should be of type TwitterAPIVersion, got {type(api_version)}')
+        self.__api_version = api_version
 
-        self.__twitter_api: Optional[tweepy.API] = None
+        if self.__api_version is TwitterAPIVersion.V1:
+            self.__twitter_api: Optional[tweepy.API] = None
+        elif self.__api_version is TwitterAPIVersion.V2:
+            self.__twitter_client: Optional[tweepy.API] = None
+        else:
+            raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
         self.__logger = logging.getLogger(__name__ + '.TweepyWrapper')
 
@@ -179,21 +194,44 @@ class TweepyWrapper:
                 auth = tweepy.OAuth1UserHandler(consumer_key=twitter_keys.consumer_key,
                                                 consumer_secret=twitter_keys.consumer_secret)
 
-            auth.set_access_token(key=twitter_keys.access_token,
-                                  secret=twitter_keys.access_secret)
+            if self.__api_version is TwitterAPIVersion.V1:
+                auth.set_access_token(key=twitter_keys.access_token,
+                                      secret=twitter_keys.access_secret)
 
-            self.__twitter_api = tweepy.API(auth)
+                self.__twitter_api = tweepy.API(auth)
+            elif self.__api_version is TwitterAPIVersion.V2:
+                self.__twitter_client = tweepy.Client(consumer_key=twitter_keys.consumer_key,
+                                                      consumer_secret=twitter_keys.consumer_secret,
+                                                      access_token=twitter_keys.access_token,
+                                                      access_token_secret=twitter_keys.access_secret)
+            else:
+                raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
+            self._connect_verify()
+
+    def _connect_verify(self):
+
+        if self.__api_version is TwitterAPIVersion.V1:
             user = self.__twitter_api.verify_credentials()
-
             self.__logger.info(f'Twitter API access confirmed for {user.name} (@{user.screen_name})')
+        elif self.__api_version is TwitterAPIVersion.V2:
+            user = self.__twitter_client.get_me()
+            self.__logger.info(f'Twitter API access confirmed for {user.data.name} (@{user.data.username})')
+        else:
+            raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
+
 
     def disconnect(self) -> None:
         """
         Disconnect from the Twitter API
         """
         self.__logger.info('disconnecting from twitter with environmental variable credentials')
-        self.__twitter_api = None
+        if self.__api_version is TwitterAPIVersion.V1:
+            self.__twitter_api = None
+        elif self.__api_version is TwitterAPIVersion.V2:
+            user = self.__twitter_client = None
+        else:
+            raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
     def __enter__(self):
         self.connect()
@@ -233,12 +271,23 @@ class TweepyWrapper:
             self.__logger.warning('Tweet was suppressed and not sent')
             tweet = None
         else:
-            if self.__twitter_api is None:
-                raise RuntimeError('Not connected to the twitter API')
+            if self.__api_version is TwitterAPIVersion.V1:
+                if self.__twitter_api is None:
+                    raise RuntimeError('Not connected to the twitter API')
+            elif self.__api_version is TwitterAPIVersion.V2:
+                if self.__twitter_client is None:
+                    raise RuntimeError('Not connected to the twitter API')
+            else:
+                raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
+
 
             if self.__suppress_tweeting is False:
-                #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
-                tweet = self.__twitter_api.update_status(payload)
+                if self.__api_version is TwitterAPIVersion.V1:
+                    tweet = self.__twitter_api.update_status(payload)
+                elif self.__api_version is TwitterAPIVersion.V2:
+                    tweet = self.__twitter_client.create_tweet(text=payload)
+                else:
+                    raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
                 self.__logger.info('Tweet Sent')
             else:

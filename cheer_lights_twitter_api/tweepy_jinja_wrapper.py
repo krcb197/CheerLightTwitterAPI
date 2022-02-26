@@ -27,17 +27,12 @@ class TweepyJinjaWrapper(TweepyWrapper):
     """
 
     def __init__(self,
-                 key_path: str,
-                 user_template_dir: Optional[str] = None,
-                 user_template_context: Optional[Dict[str, Any]] = None,
-                 suppress_tweeting: bool = False,
-                 suppress_connection: bool = False,
-                 generate_access: bool = False):
+                 *args,
+                 **kwargs):
 
-        super().__init__(key_path=key_path,
-                         suppress_tweeting=suppress_tweeting,
-                         suppress_connection=suppress_connection,
-                         generate_access=generate_access)
+        user_template_context = kwargs.pop('user_template_context', None)
+        user_template_dir = kwargs.pop('user_template_dir', None)
+        super().__init__(key_path=args[0], kwargs=kwargs)
 
         if user_template_context is None:
             self.__user_template_context = {}

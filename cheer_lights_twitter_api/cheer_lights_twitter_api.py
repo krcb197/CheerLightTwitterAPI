@@ -43,18 +43,10 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
 
     def __init__(self,
                  key_path: str,
-                 user_template_dir: Optional[str] = None,
-                 user_template_context: Optional[Dict[str, Any]] = None,
-                 suppress_tweeting: bool = False,
-                 suppress_connection: bool = False,
-                 generate_access: bool = False):
+                 **kwargs):
 
-        super().__init__(key_path=key_path,
-                         user_template_dir=user_template_dir,
-                         user_template_context=user_template_context,
-                         suppress_tweeting=suppress_tweeting,
-                         suppress_connection=suppress_connection,
-                         generate_access=generate_access)
+        super().__init__(key_path,
+                         kwargs=kwargs)
 
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
