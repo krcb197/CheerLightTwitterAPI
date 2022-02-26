@@ -4,3 +4,4 @@ device can send a tweet
 """
 from .cheer_lights_twitter_api import CheerLightTwitterAPI
 from .cheer_lights_twitter_api import CheerLightColours
+from .tweepy_wrapper import TwitterAPIVersion

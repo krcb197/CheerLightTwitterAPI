@@ -11,7 +11,6 @@ import os
 import jinja2 as jj
 
 from .tweepy_wrapper import TweepyWrapper
-from .tweepy_wrapper import TweepyStatus
 
 file_path = os.path.dirname(__file__)
 
@@ -27,17 +26,13 @@ class TweepyJinjaWrapper(TweepyWrapper):
     """
 
     def __init__(self,
-                 key_path: str,
-                 user_template_dir: Optional[str] = None,
-                 user_template_context: Optional[Dict[str, Any]] = None,
-                 suppress_tweeting: bool = False,
-                 suppress_connection: bool = False,
-                 generate_access: bool = False):
+                 **kwargs):
 
-        super().__init__(key_path=key_path,
-                         suppress_tweeting=suppress_tweeting,
-                         suppress_connection=suppress_connection,
-                         generate_access=generate_access)
+        self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
+
+        user_template_context = kwargs.pop('user_template_context', None)
+        user_template_dir = kwargs.pop('user_template_dir', None)
+        super().__init__(**kwargs)
 
         if user_template_context is None:
             self.__user_template_context = {}
@@ -66,8 +61,6 @@ class TweepyJinjaWrapper(TweepyWrapper):
             undefined=jj.StrictUndefined
         )
 
-        self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
-
     def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
@@ -87,7 +80,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
 
         return tweet_content
 
-    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
+    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
         """
         Send a tweet based on a Jinja template
 

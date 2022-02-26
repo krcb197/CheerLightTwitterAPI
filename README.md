@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 # Preparation
 
-In order to use this library you will need twitter API keys
+In order to use this library you will need Twitter API keys
 
 > :warning: **WARNING**: Please be careful not to expose Twitter API keys. **DO NOT** share them with other people or upload them to a cloud repository without care 
 
@@ -73,7 +73,7 @@ This can be used in one of two ways
 
 ## Command Application
 
-The file can be called usin the command line:
+The file can be called using the command line:
 
 For example to generate a tweet with the color red
 ```bash
@@ -122,6 +122,8 @@ cheer_lights.disconnect()
 
 # Advanced Usage
 
+## Tweet Template
+
 The payload of the tweet is constructed using [Jinja](https://jinja.palletsprojects.com/en/3.0.x/)
 this is a templating language used in many web engines, it allows the payload of the tweet to
 be changed without needing to edit the core code.
@@ -131,7 +133,7 @@ The payload can be edited by changing the the ```tweet.jinga``` file in the chee
 However, if you want to change the template without changing the code from the repository you 
 can do one of the following:
 
-## Derived Class
+### Derived Class
 
 Build a derived class from the ```CheerLightTwitterAPI``` create a new method to tweet a message
 method. At this point you are bypassing the all the jinja templates
@@ -144,15 +146,12 @@ from cheer_lights_twitter_api import CheerLightTwitterAPI
 
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
-   def colour_tweet(self, colour: Union[CheerLightColours, str]) -> str:
+   def colour_tweet(self, colour: Union[CheerLightColours, str]) -> int:
 
       # type check the colour parameter
       self.verify_colour(colour)
 
-      if jinja_context is not None:
-         raise NotImplementedError('jinja context is not supported')
-
-      # build message using a jinga template
+      # build message using a jinja template
       if isinstance(colour, str):
          colour_str = colour
       elif isinstance(colour, CheerLightColours):
@@ -160,10 +159,10 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
       else:
          raise RuntimeError('unhandled colour type')
 
-      return self.tweet('My tweet {colour_str}')
+      return self.tweet(f'My tweet {colour_str}')
 ```
 
-## User Jinja template
+### User Jinja template
 
 When initialising the ```CheerLightTwitterAPI``` class pass in the string name for your own 
 folder of templates and user context using 
@@ -237,10 +236,51 @@ This will create a tweet with the following payloads:
 - `@cheerlights orange from Bob to 99`
 - `@cheerlights orange from Bob to 101`
 
+## Twitter API Version
+
+Both V1.1 and V2 Twitter API are supported. Currently V1.1 is used by default, however, that 
+may change in a future version. 
+
+### Using Twitter V1.1 API
+
+Either from the command line
+
+```bash
+python -m cheer_lights red -g --twitter_api_version V1
+```
+
+Creating the class
+
+```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+from cheer_lights_twitter_api import TwitterAPIVersion
+
+cheer_lights = CheerLightTwitterAPI(twitter_api_version=TwitterAPIVersion.V1)
+```
+
+### Using Twitter V2 API
+
+Either from the command line
+
+```bash
+python -m cheer_lights red -g --twitter_api_version V2
+```
+
+Creating the class
+
+```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+from cheer_lights_twitter_api import TwitterAPIVersion
+
+cheer_lights = CheerLightTwitterAPI(twitter_api_version=TwitterAPIVersion.V2)
+```
+
+
+
 # Development and Testing
 
 During Development, it may be useful to stop:
-- The connection being made to the Twitter API (prehaps because you haven't got the keys)
+- The connection being made to the Twitter API (perhaps because you haven't got the keys)
 - Tweets from being generated, because it is annoying deleting them all
 
 This can be avoided as follows:

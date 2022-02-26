@@ -1,5 +1,5 @@
 """
-module to provide an API for making cheerlights tweets
+module to provide an API for making CheerLights tweets
 """
 
 from enum import IntEnum
@@ -11,9 +11,9 @@ from typing import Optional, Union, Dict, Any
 import os
 
 from .tweepy_jinja_wrapper import TweepyJinjaWrapper
-from .tweepy_wrapper import TweepyStatus
 
 file_path = os.path.dirname(__file__)
+
 
 class CheerLightColours(IntEnum):
     """
@@ -31,9 +31,10 @@ class CheerLightColours(IntEnum):
     ORANGE = 0xFFA500
     PINK = 0xFFC0CB
 
+
 class CheerLightTwitterAPI(TweepyJinjaWrapper):
     """
-    Class to sent a tweet to the Cheerlights server
+    Class to sent a tweet to the CheerLights server
 
     :param user_template_dir: Path to a directory where user-defined template overrides are stored.
     :type user_template_dir: str
@@ -42,19 +43,9 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
     """
 
     def __init__(self,
-                 key_path: str,
-                 user_template_dir: Optional[str] = None,
-                 user_template_context: Optional[Dict[str, Any]] = None,
-                 suppress_tweeting: bool = False,
-                 suppress_connection: bool = False,
-                 generate_access: bool = False):
+                 **kwargs):
 
-        super().__init__(key_path=key_path,
-                         user_template_dir=user_template_dir,
-                         user_template_context=user_template_context,
-                         suppress_tweeting=suppress_tweeting,
-                         suppress_connection=suppress_connection,
-                         generate_access=generate_access)
+        super().__init__(**kwargs)
 
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
@@ -75,7 +66,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
                 raise ValueError(f'{colour} is not a legal colour to choose')
 
     def colour_template_payload(self, colour: Union[CheerLightColours, str],
-                      jinja_context: Optional[Dict[str, Any]] = None) -> str:
+                                jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
         :param colour: colour
@@ -87,7 +78,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
 
         self.verify_colour(colour)
 
-        # build message using a jinga template
+        # build message using a jinja template
         if isinstance(colour, str):
             colour_str = colour
         elif isinstance(colour, CheerLightColours):
@@ -106,7 +97,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
         return tweet_content
 
     def colour_template_tweet(self, colour: Union[CheerLightColours, str],
-                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
+                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
         """
 
         :param colour: colour to include in the tweet
