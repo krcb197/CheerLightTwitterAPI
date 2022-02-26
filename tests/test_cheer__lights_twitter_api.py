@@ -189,6 +189,8 @@ def test_tweet():
     tweets = dut.tweets_since(since_id=session_start_max_id, count=10)
     for tweet in tweets:
         if tweet.id == tweet_sent.id:
+            del_tweet = dut.destroy_tweet(tweet_id=tweet.id)
+            assert del_tweet.id == tweet.id
             break
     else:
         assert False
@@ -196,11 +198,13 @@ def test_tweet():
 
     # test in a context manager
     with TestTwitterAPI() as alt_dut:
-        alt_dut.test_tweet()
+        tweet_sent = alt_dut.test_tweet()
         time.sleep(10)
         tweets = alt_dut.tweets_since(since_id=session_start_max_id, count=10)
         for tweet in tweets:
             if tweet.id == tweet_sent.id:
+                del_tweet = alt_dut.destroy_tweet(tweet_id=tweet.id)
+                assert del_tweet.id == tweet.id
                 break
         else:
             assert False

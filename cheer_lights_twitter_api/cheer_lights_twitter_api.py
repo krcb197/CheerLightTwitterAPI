@@ -109,6 +109,6 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
         """
         payload = self.colour_template_payload(colour=colour, jinja_context=jinja_context)
 
-        self.__logger.debug(f'tweet prepared: {payload}')
+        self.__logger.info(f'tweet prepared: {payload}')
 
         return super().tweet(payload=payload)
