@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 # Preparation
 
-In order to use this library you will need twitter API keys
+In order to use this library you will need Twitter API keys
 
 > :warning: **WARNING**: Please be careful not to expose Twitter API keys. **DO NOT** share them with other people or upload them to a cloud repository without care 
 
@@ -73,7 +73,7 @@ This can be used in one of two ways
 
 ## Command Application
 
-The file can be called usin the command line:
+The file can be called using the command line:
 
 For example to generate a tweet with the color red
 ```bash
@@ -151,7 +151,7 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
       # type check the colour parameter
       self.verify_colour(colour)
 
-      # build message using a jinga template
+      # build message using a jinja template
       if isinstance(colour, str):
          colour_str = colour
       elif isinstance(colour, CheerLightColours):
@@ -159,7 +159,7 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
       else:
          raise RuntimeError('unhandled colour type')
 
-      return self.tweet('My tweet {colour_str}')
+      return self.tweet(f'My tweet {colour_str}')
 ```
 
 ### User Jinja template
@@ -280,7 +280,7 @@ cheer_lights = CheerLightTwitterAPI(twitter_api_version=TwitterAPIVersion.V2)
 # Development and Testing
 
 During Development, it may be useful to stop:
-- The connection being made to the Twitter API (prehaps because you haven't got the keys)
+- The connection being made to the Twitter API (perhaps because you haven't got the keys)
 - Tweets from being generated, because it is annoying deleting them all
 
 This can be avoided as follows:
