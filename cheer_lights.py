@@ -74,6 +74,12 @@ if __name__ == "__main__":
     cheer_lights.connect()
     tweet_sent = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
 
-    if command_args.destroy_tweet is True:
-        time.sleep(10)
-        cheer_lights.destroy_tweet(tweet_id=tweet_sent.id)
+    if (command_args.supress_connection is True) or (command_args.suppress_tweeting is True):
+        pass
+    else:
+        if tweet_sent is None:
+            raise RuntimeError('Tweet failed to send')
+
+        if (command_args.destroy_tweet is True) and (command_args.suppress_tweeting is False):
+            time.sleep(10)
+            cheer_lights.destroy_tweet(tweet_id=tweet_sent.id)

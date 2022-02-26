@@ -252,6 +252,9 @@ class TweepyWrapper:
         removes a tweet
 
         """
+        if self.__twitter_api is None:
+            raise RuntimeError('Not connected to the twitter API')
+
         tweet = self.__twitter_api.destroy_status(tweet_id)
         self.__logger.info(f'Tweet Deleted {tweet.id}')
         return tweet
