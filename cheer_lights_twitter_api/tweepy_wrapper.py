@@ -240,9 +240,21 @@ class TweepyWrapper:
                 #tweet = self.__twitter_api.create_tweet(text=payload, user_auth=True)
                 tweet = self.__twitter_api.update_status(payload)
 
-                self.__logger.info('Tweet Sent')
+                self.__logger.info(f'Tweet Sent {tweet.id}')
             else:
                 self.__logger.warning('Tweet was suppressed and not sent')
                 tweet = None
 
+        return tweet
+
+    def destroy_tweet(self, tweet_id: int) -> TweepyStatus:
+        """
+        removes a tweet
+
+        """
+        if self.__twitter_api is None:
+            raise RuntimeError('Not connected to the twitter API')
+
+        tweet = self.__twitter_api.destroy_status(tweet_id)
+        self.__logger.info(f'Tweet Deleted {tweet.id}')
         return tweet

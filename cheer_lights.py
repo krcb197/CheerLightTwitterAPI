@@ -7,6 +7,8 @@ import logging.config
 
 import os
 
+import time
+
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 from cheer_lights_twitter_api import CheerLightColours
 
@@ -26,6 +28,8 @@ parser.add_argument('--supress_connection', '-c', dest='supress_connection', act
                     help='Does not connect to the twitter API, this is useful for testing')
 parser.add_argument('--generate_access', '-g', dest='generate_access', action='store_true',
                     help='generate the user access token via a web confirmation')
+parser.add_argument('--destroy_tweet', '-d', dest='destroy_tweet', action='store_true',
+                    help='destroy (delete) the tweet created which is useful in testing')
 
 if __name__ == "__main__":
 
@@ -69,3 +73,13 @@ if __name__ == "__main__":
                                         generate_access=command_args.generate_access)
     cheer_lights.connect()
     tweet_sent = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
+
+    if (command_args.supress_connection is True) or (command_args.suppress_tweeting is True):
+        pass
+    else:
+        if tweet_sent is None:
+            raise RuntimeError('Tweet failed to send')
+
+        if (command_args.destroy_tweet is True) and (command_args.suppress_tweeting is False):
+            time.sleep(10)
+            cheer_lights.destroy_tweet(tweet_id=tweet_sent.id)
