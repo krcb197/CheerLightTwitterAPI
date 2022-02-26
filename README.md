@@ -122,6 +122,8 @@ cheer_lights.disconnect()
 
 # Advanced Usage
 
+## Tweet Template
+
 The payload of the tweet is constructed using [Jinja](https://jinja.palletsprojects.com/en/3.0.x/)
 this is a templating language used in many web engines, it allows the payload of the tweet to
 be changed without needing to edit the core code.
@@ -131,7 +133,7 @@ The payload can be edited by changing the the ```tweet.jinga``` file in the chee
 However, if you want to change the template without changing the code from the repository you 
 can do one of the following:
 
-## Derived Class
+### Derived Class
 
 Build a derived class from the ```CheerLightTwitterAPI``` create a new method to tweet a message
 method. At this point you are bypassing the all the jinja templates
@@ -144,13 +146,10 @@ from cheer_lights_twitter_api import CheerLightTwitterAPI
 
 class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
 
-   def colour_tweet(self, colour: Union[CheerLightColours, str]) -> str:
+   def colour_tweet(self, colour: Union[CheerLightColours, str]) -> int:
 
       # type check the colour parameter
       self.verify_colour(colour)
-
-      if jinja_context is not None:
-         raise NotImplementedError('jinja context is not supported')
 
       # build message using a jinga template
       if isinstance(colour, str):
@@ -163,7 +162,7 @@ class MyCheerLightTwitterAPI(CheerLightTwitterAPI):
       return self.tweet('My tweet {colour_str}')
 ```
 
-## User Jinja template
+### User Jinja template
 
 When initialising the ```CheerLightTwitterAPI``` class pass in the string name for your own 
 folder of templates and user context using 
@@ -236,6 +235,47 @@ with CheerLightTwitterAPI(user_template_dir='custom_templates',
 This will create a tweet with the following payloads:
 - `@cheerlights orange from Bob to 99`
 - `@cheerlights orange from Bob to 101`
+
+## Twitter API Version
+
+Both V1.1 and V2 Twitter API are supported. Currently V1.1 is used by default, however, that 
+may change in a future version. 
+
+### Using Twitter V1.1 API
+
+Either from the command line
+
+```bash
+python -m cheer_lights red -g --twitter_api_version V1
+```
+
+Creating the class
+
+```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+from cheer_lights_twitter_api import TwitterAPIVersion
+
+cheer_lights = CheerLightTwitterAPI(twitter_api_version=TwitterAPIVersion.V1)
+```
+
+### Using Twitter V2 API
+
+Either from the command line
+
+```bash
+python -m cheer_lights red -g --twitter_api_version V2
+```
+
+Creating the class
+
+```python
+from cheer_lights_twitter_api import CheerLightTwitterAPI
+from cheer_lights_twitter_api import TwitterAPIVersion
+
+cheer_lights = CheerLightTwitterAPI(twitter_api_version=TwitterAPIVersion.V2)
+```
+
+
 
 # Development and Testing
 
