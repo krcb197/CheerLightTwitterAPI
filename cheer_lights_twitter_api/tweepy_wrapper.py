@@ -247,10 +247,11 @@ class TweepyWrapper:
 
         return tweet
 
-    def destroy_tweet(self, tweet_id: int):
+    def destroy_tweet(self, tweet_id: int) -> TweepyStatus:
         """
         removes a tweet
 
         """
-        tweet = self.__twitter_api.destroy_status(id)
+        tweet = self.__twitter_api.destroy_status(tweet_id)
         self.__logger.info(f'Tweet Deleted {tweet.id}')
+        return tweet

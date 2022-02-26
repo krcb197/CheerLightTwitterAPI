@@ -28,8 +28,8 @@ parser.add_argument('--supress_connection', '-c', dest='supress_connection', act
                     help='Does not connect to the twitter API, this is useful for testing')
 parser.add_argument('--generate_access', '-g', dest='generate_access', action='store_true',
                     help='generate the user access token via a web confirmation')
-parser.add_argument('--destory_tweet', '-d', dest='destroy_tweet', action='store_true',
-                    help='destory (delete) the tweet created which is useful in testing')
+parser.add_argument('--destroy_tweet', '-d', dest='destroy_tweet', action='store_true',
+                    help='destroy (delete) the tweet created which is useful in testing')
 
 if __name__ == "__main__":
 
@@ -75,5 +75,5 @@ if __name__ == "__main__":
     tweet_sent = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
 
     if command_args.destroy_tweet is True:
-        time.sleep(60)
+        time.sleep(10)
         cheer_lights.destroy_tweet(tweet_id=tweet_sent.id)
