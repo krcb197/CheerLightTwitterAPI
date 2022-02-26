@@ -1,5 +1,5 @@
 """
-module to demostrate the cheer_lights_twitter_api and provide command line access to it
+module to demonstrate the cheer_lights_twitter_api and provide command line access to it
 """
 import argparse
 
@@ -25,7 +25,7 @@ parser.add_argument('--verbose', '-v', dest='verbose', action='store_true',
 parser.add_argument('--suppress_tweeting', '-s', dest='suppress_tweeting', action='store_true',
                     help='Makes the connection to twitter but will suppress any update status, '
                          'this is useful for testing')
-parser.add_argument('--supress_connection', '-c', dest='supress_connection', action='store_true',
+parser.add_argument('--suppress_connection', '-c', dest='suppress_connection', action='store_true',
                     help='Does not connect to the twitter API, this is useful for testing')
 parser.add_argument('--generate_access', '-g', dest='generate_access', action='store_true',
                     help='generate the user access token via a web confirmation')
@@ -72,13 +72,13 @@ if __name__ == "__main__":
 
     cheer_lights = CheerLightTwitterAPI(key_path=file_path,
                                         suppress_tweeting=command_args.suppress_tweeting,
-                                        suppress_connection=command_args.supress_connection,
+                                        suppress_connection=command_args.suppress_connection,
                                         generate_access=command_args.generate_access,
                                         twitter_api_version=TwitterAPIVersion[command_args.twitter_api_version])
     cheer_lights.connect()
     tweet_sent_id = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
 
-    if (command_args.supress_connection is True) or (command_args.suppress_tweeting is True):
+    if (command_args.suppress_connection is True) or (command_args.suppress_tweeting is True):
         pass
     else:
         if tweet_sent_id is None:

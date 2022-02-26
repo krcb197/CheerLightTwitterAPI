@@ -1,5 +1,5 @@
 """
-module to provide an API for making cheerlights tweets
+module to provide an API for making CheerLights tweets
 """
 
 from enum import IntEnum
@@ -13,6 +13,7 @@ import os
 from .tweepy_jinja_wrapper import TweepyJinjaWrapper
 
 file_path = os.path.dirname(__file__)
+
 
 class CheerLightColours(IntEnum):
     """
@@ -30,9 +31,10 @@ class CheerLightColours(IntEnum):
     ORANGE = 0xFFA500
     PINK = 0xFFC0CB
 
+
 class CheerLightTwitterAPI(TweepyJinjaWrapper):
     """
-    Class to sent a tweet to the Cheerlights server
+    Class to sent a tweet to the CheerLights server
 
     :param user_template_dir: Path to a directory where user-defined template overrides are stored.
     :type user_template_dir: str
@@ -64,7 +66,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
                 raise ValueError(f'{colour} is not a legal colour to choose')
 
     def colour_template_payload(self, colour: Union[CheerLightColours, str],
-                      jinja_context: Optional[Dict[str, Any]] = None) -> str:
+                                jinja_context: Optional[Dict[str, Any]] = None) -> str:
         """
         String to be tweeted out based on the colour
         :param colour: colour
@@ -76,7 +78,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
 
         self.verify_colour(colour)
 
-        # build message using a jinga template
+        # build message using a jinja template
         if isinstance(colour, str):
             colour_str = colour
         elif isinstance(colour, CheerLightColours):

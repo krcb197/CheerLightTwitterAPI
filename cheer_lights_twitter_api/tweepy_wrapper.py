@@ -14,6 +14,7 @@ from enum import Enum, auto
 
 import tweepy
 
+
 @dataclass
 class _TwitterAPIKeys:
     """
@@ -24,6 +25,7 @@ class _TwitterAPIKeys:
     access_token: Optional[str] = None
     access_secret: Optional[str] = None
 
+
 class TwitterAPIVersion(Enum):
     """
     Version of the Twitter API to use
@@ -31,13 +33,15 @@ class TwitterAPIVersion(Enum):
     V2 = auto()
     V1 = auto()
 
+
 @dataclass
 class Tweet:
     """
     Simplified tweet record to harmonise the V1 and V2 API responses
     """
-    tweet_id : int
-    text : str
+    tweet_id: int
+    text: str
+
 
 class TweepyWrapper:
     """
@@ -79,7 +83,7 @@ class TweepyWrapper:
         if self.__api_version is TwitterAPIVersion.V1:
             self.__twitter_api: Optional[tweepy.API] = None
         elif self.__api_version is TwitterAPIVersion.V2:
-            self.__twitter_client: Optional[tweepy.API] = None
+            self.__twitter_client: Optional[tweepy.Client] = None
         else:
             raise RuntimeError(f'Unhandled Twitter API version {self.__api_version.name}')
 
@@ -141,7 +145,6 @@ class TweepyWrapper:
             twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
             twitter_access_secret = os.environ.get("TWITTER_ACCESS_SECRET")
 
-
             if twitter_consumer_key is None:
                 raise RuntimeError('Environment Variable: TWITTER_API_KEY missing')
 
@@ -181,8 +184,8 @@ class TweepyWrapper:
 
             if self.__generate_access_token is True:
                 auth = tweepy.OAuthHandler(consumer_key=twitter_keys.consumer_key,
-                                                consumer_secret=twitter_keys.consumer_secret,
-                                                callback='oob')
+                                           consumer_secret=twitter_keys.consumer_secret,
+                                           callback='oob')
 
                 auth_url = auth.get_authorization_url()
                 print('Authorization URL: ' + auth_url)
@@ -192,13 +195,13 @@ class TweepyWrapper:
                 auth.get_access_token(verifier)
 
                 if os.path.exists(self.__access_key_fqfn):
-                    confirm = input('overwite access_twitter_credentials.json '
+                    confirm = input('overwrite access_twitter_credentials.json '
                                     'file [Y/N]').strip().upper()
                     if confirm == 'Y':
                         with open(self.__access_key_fqfn, "w",
                                   encoding='utf-8') as file:
                             json.dump({'ACCESS_TOKEN': auth.access_token,
-                                       'ACCESS_SECRET': auth.access_token_secret }, file)
+                                       'ACCESS_SECRET': auth.access_token_secret}, file)
 
                         twitter_keys.access_token = auth.access_token
                         twitter_keys.access_secret = auth.access_token_secret
@@ -276,7 +279,7 @@ class TweepyWrapper:
             if self.__twitter_client is None:
                 raise RuntimeError('Not connected to the twitter API')
             twitter_response = self.__twitter_client.get_users_tweets(id=self.__user_id, max_results=count,
-                                                                      user_auth =True)
+                                                                      user_auth=True)
             for tweet in twitter_response.data:
                 tweets.append(Tweet(tweet_id=int(tweet['id']), text=tweet['text']))
         else:

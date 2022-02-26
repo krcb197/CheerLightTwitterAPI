@@ -11,6 +11,7 @@ from cheer_lights_twitter_api import CheerLightColours
 from cheer_lights_twitter_api.tweepy_wrapper import TweepyWrapper
 from cheer_lights_twitter_api import TwitterAPIVersion
 
+
 @pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
 def test_tweet_unit_test(twitter_api_version, mocked_tweepy):
     """
@@ -37,6 +38,7 @@ def test_tweet_unit_test(twitter_api_version, mocked_tweepy):
         mocked_tweepy['tweepy_api_patch'].return_value.update_status.reset_mock()
     dut.disconnect()
 
+
 @pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
 def test_supressed_tweet_unit_test(twitter_api_version, mocked_tweepy):
     """
@@ -49,6 +51,7 @@ def test_supressed_tweet_unit_test(twitter_api_version, mocked_tweepy):
     mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_not_called()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
+
 
 @pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
 def test_supressed_connection_unit_test(twitter_api_version, mocked_tweepy):
@@ -102,6 +105,7 @@ def test_tweet_payload():
         payload = dut.colour_template_payload(colour=colour)
         assert payload == f'@cheerlights {colour.name.lower()}'
 
+
 def test_custom_template_with_static_context():
     """
     test overloading the jinja template with a custom template
@@ -111,7 +115,7 @@ def test_custom_template_with_static_context():
     custom_templates = os.path.join(file_path, 'custom_template_static_context')
 
     custom_context = {
-        'user' : 'Bob'
+        'user': 'Bob'
     }
 
     dut = CheerLightTwitterAPI(key_path='illegal_path',  # the path should never get used
@@ -120,6 +124,7 @@ def test_custom_template_with_static_context():
     # no need to connect to just test the payload generation
     payload = dut.colour_template_payload(colour='orange')
     assert payload == '@cheerlights orange from Bob'
+
 
 def test_custom_template_with_dynamic_context():
     """
@@ -161,6 +166,7 @@ def test_custom_template_with_static_and_dynamic_context():
     payload = dut.colour_template_payload(colour='orange', jinja_context={'other_user': 99})
     assert payload == '@cheerlights orange from Bob to 99'
 
+
 @pytest.mark.integration_test
 @pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
 def test_tweet(twitter_api_version):
@@ -179,7 +185,7 @@ def test_tweet(twitter_api_version):
 
             self.last_random_value = 0
 
-        def test_tweet(self) -> str:
+        def test_tweet(self) -> int:
 
             self.last_random_value = randint(0, 2**32)
 
@@ -187,7 +193,6 @@ def test_tweet(twitter_api_version):
                       f'Python {sys.version_info.major}.{sys.version_info.minor}'
 
             return super().tweet(payload=payload)
-
 
     # test with manual connect disconnect
     dut = TestTwitterAPI(twitter_api_version)
@@ -220,9 +225,3 @@ def test_tweet(twitter_api_version):
                 break
         else:
             assert False
-
-
-
-
-
-
