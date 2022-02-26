@@ -11,7 +11,6 @@ import os
 import jinja2 as jj
 
 from .tweepy_wrapper import TweepyWrapper
-from .tweepy_wrapper import TweepyStatus
 
 file_path = os.path.dirname(__file__)
 
@@ -27,12 +26,11 @@ class TweepyJinjaWrapper(TweepyWrapper):
     """
 
     def __init__(self,
-                 *args,
                  **kwargs):
 
         user_template_context = kwargs.pop('user_template_context', None)
         user_template_dir = kwargs.pop('user_template_dir', None)
-        super().__init__(key_path=args[0], kwargs=kwargs)
+        super().__init__(**kwargs)
 
         if user_template_context is None:
             self.__user_template_context = {}
@@ -82,7 +80,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
 
         return tweet_content
 
-    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
+    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
         """
         Send a tweet based on a Jinja template
 

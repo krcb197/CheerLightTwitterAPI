@@ -11,7 +11,6 @@ from typing import Optional, Union, Dict, Any
 import os
 
 from .tweepy_jinja_wrapper import TweepyJinjaWrapper
-from .tweepy_wrapper import TweepyStatus
 
 file_path = os.path.dirname(__file__)
 
@@ -42,11 +41,9 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
     """
 
     def __init__(self,
-                 key_path: str,
                  **kwargs):
 
-        super().__init__(key_path,
-                         kwargs=kwargs)
+        super().__init__(**kwargs)
 
         self.__logger = logging.getLogger(__name__ + '.CheerLightTwitterAPI')
 
@@ -98,7 +95,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
         return tweet_content
 
     def colour_template_tweet(self, colour: Union[CheerLightColours, str],
-                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[TweepyStatus]:
+                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
         """
 
         :param colour: colour to include in the tweet

@@ -9,27 +9,40 @@ import pytest
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 from cheer_lights_twitter_api import CheerLightColours
 from cheer_lights_twitter_api.tweepy_wrapper import TweepyWrapper
+from cheer_lights_twitter_api import TwitterAPIVersion
 
-
-def test_tweet_unit_test(mocked_tweepy):
+@pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
+def test_tweet_unit_test(twitter_api_version, mocked_tweepy):
     """
     test that the tweets are made using a mock tweepy
     """
+    class V1TweetReturn:
+        def __init__(self):
+            self.id = 1
 
-    dut = CheerLightTwitterAPI(key_path='..')  # the path should never get used
+    dut = CheerLightTwitterAPI(key_path='..', twitter_api_version=twitter_api_version)  # the path should never get used
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
-    dut.colour_template_tweet('blue')
-    mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_called_once_with('@cheerlights blue')
-    mocked_tweepy['tweepy_api_patch'].reset_mock()
+    mocked_tweepy['tweepy_api_patch'].return_value.update_status.return_value = V1TweetReturn()
+    tweet_id = dut.colour_template_tweet('blue')
+    if twitter_api_version is TwitterAPIVersion.V1:
+        mocked_tweepy['tweepy_client_patch'].return_value.create_tweet.assert_not_called()
+        mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_called_once_with('@cheerlights blue')
+        assert tweet_id == 1
+        mocked_tweepy['tweepy_api_patch'].return_value.update_status.reset_mock()
+    elif twitter_api_version is TwitterAPIVersion.V2:
+        mocked_tweepy['tweepy_api_patch'].return_value.update_status.assert_not_called()
+        mocked_tweepy['tweepy_client_patch'].return_value.create_tweet.assert_called_once_with(text='@cheerlights blue')
+        assert tweet_id == 1
+        mocked_tweepy['tweepy_api_patch'].return_value.update_status.reset_mock()
     dut.disconnect()
 
-
-def test_supressed_tweet_unit_test(mocked_tweepy):
+@pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
+def test_supressed_tweet_unit_test(twitter_api_version, mocked_tweepy):
     """
     test that the tweets are not made id the suppress_tweeting option is selected
     """
-    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True)
+    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True, twitter_api_version=twitter_api_version)
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.colour_template_tweet('blue')
@@ -37,11 +50,13 @@ def test_supressed_tweet_unit_test(mocked_tweepy):
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.disconnect()
 
-def test_supressed_connection_unit_test(mocked_tweepy):
+@pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
+def test_supressed_connection_unit_test(twitter_api_version, mocked_tweepy):
     """
     test that the tweets are not made id the suppress_tweeting option is selected
     """
-    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True, suppress_connection=True)
+    dut = CheerLightTwitterAPI(key_path='..', suppress_tweeting=True, suppress_connection=True,
+                               twitter_api_version=twitter_api_version)
     mocked_tweepy['tweepy_api_patch'].reset_mock()
     dut.connect()
     mocked_tweepy['tweepy_api_patch'].assert_not_called()
@@ -147,7 +162,8 @@ def test_custom_template_with_static_and_dynamic_context():
     assert payload == '@cheerlights orange from Bob to 99'
 
 @pytest.mark.integration_test
-def test_tweet():
+@pytest.mark.parametrize("twitter_api_version", TwitterAPIVersion)
+def test_tweet(twitter_api_version):
     """
     test sending a tweet
     """
@@ -157,9 +173,9 @@ def test_tweet():
         local class with overloaded method
         """
 
-        def __init__(self):
+        def __init__(self, twitter_api_version):
 
-            super().__init__(key_path='..')
+            super().__init__(key_path='..', twitter_api_version=twitter_api_version)
 
             self.last_random_value = 0
 
@@ -174,37 +190,33 @@ def test_tweet():
 
 
     # test with manual connect disconnect
-    dut = TestTwitterAPI()
+    dut = TestTwitterAPI(twitter_api_version)
 
     # sending a tweet without connection should create an error
     with pytest.raises(RuntimeError):
         dut.test_tweet()
 
     dut.connect()
-    last_tweets = dut.last_tweet
-    session_start_max_id = last_tweets.max_id
 
-    tweet_sent = dut.test_tweet()
+    tweet_sent_id = dut.test_tweet()
     time.sleep(10)
-    tweets = dut.tweets_since(since_id=session_start_max_id, count=10)
+    tweets = dut.user_tweets(count=10)
     for tweet in tweets:
-        if tweet.id == tweet_sent.id:
-            del_tweet = dut.destroy_tweet(tweet_id=tweet.id)
-            assert del_tweet.id == tweet.id
+        if tweet.id == tweet_sent_id:
+            dut.destroy_tweet(tweet_id=tweet.id)
             break
     else:
         assert False
     dut.disconnect()
 
     # test in a context manager
-    with TestTwitterAPI() as alt_dut:
-        tweet_sent = alt_dut.test_tweet()
+    with TestTwitterAPI(twitter_api_version) as alt_dut:
+        tweet_sent_id = alt_dut.test_tweet()
         time.sleep(10)
-        tweets = alt_dut.tweets_since(since_id=session_start_max_id, count=10)
+        tweets = alt_dut.user_tweets(count=10)
         for tweet in tweets:
-            if tweet.id == tweet_sent.id:
-                del_tweet = alt_dut.destroy_tweet(tweet_id=tweet.id)
-                assert del_tweet.id == tweet.id
+            if tweet.id == tweet_sent_id:
+                alt_dut.destroy_tweet(tweet_id=tweet.id)
                 break
         else:
             assert False

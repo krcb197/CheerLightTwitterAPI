@@ -11,6 +11,7 @@ import time
 
 from cheer_lights_twitter_api import CheerLightTwitterAPI
 from cheer_lights_twitter_api import CheerLightColours
+from cheer_lights_twitter_api import TwitterAPIVersion
 
 file_path = os.path.dirname(__file__)
 
@@ -30,6 +31,8 @@ parser.add_argument('--generate_access', '-g', dest='generate_access', action='s
                     help='generate the user access token via a web confirmation')
 parser.add_argument('--destroy_tweet', '-d', dest='destroy_tweet', action='store_true',
                     help='destroy (delete) the tweet created which is useful in testing')
+parser.add_argument('--twitter_api_version', type=str, default='V1',
+                    choices=[choice.name for choice in TwitterAPIVersion])
 
 if __name__ == "__main__":
 
@@ -70,16 +73,17 @@ if __name__ == "__main__":
     cheer_lights = CheerLightTwitterAPI(key_path=file_path,
                                         suppress_tweeting=command_args.suppress_tweeting,
                                         suppress_connection=command_args.supress_connection,
-                                        generate_access=command_args.generate_access)
+                                        generate_access=command_args.generate_access,
+                                        twitter_api_version=TwitterAPIVersion[command_args.twitter_api_version])
     cheer_lights.connect()
-    tweet_sent = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
+    tweet_sent_id = cheer_lights.colour_template_tweet(CheerLightColours[command_args.colour.upper()])
 
     if (command_args.supress_connection is True) or (command_args.suppress_tweeting is True):
         pass
     else:
-        if tweet_sent is None:
+        if tweet_sent_id is None:
             raise RuntimeError('Tweet failed to send')
 
         if (command_args.destroy_tweet is True) and (command_args.suppress_tweeting is False):
             time.sleep(10)
-            cheer_lights.destroy_tweet(tweet_id=tweet_sent.id)
+            cheer_lights.destroy_tweet(tweet_id=tweet_sent_id)
