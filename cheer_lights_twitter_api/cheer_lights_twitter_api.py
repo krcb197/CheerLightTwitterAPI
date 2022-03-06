@@ -7,7 +7,7 @@ from enum import IntEnum
 import logging
 import logging.config
 
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union
 import os
 
 from .tweepy_jinja_wrapper import TweepyJinjaWrapper
