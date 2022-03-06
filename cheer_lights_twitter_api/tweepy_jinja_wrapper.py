@@ -19,10 +19,9 @@ class TweepyJinjaWrapper(TweepyWrapper):
     """
     Class to sent a tweet to the Cheerlights server
 
-    :param user_template_dir: Path to a directory where user-defined template overrides are stored.
-    :type user_template_dir: str
-    :param user_template_context: Additional context variables to load into the template namespace.
-    :type user_template_context: type
+    Args:
+        user_template_dir (str): Path to a directory where user-defined jinja template overrides are stored.
+        user_template_context (dict): Additional context variables to load into the template namespace.
     """
 
     def __init__(self,
@@ -61,26 +60,30 @@ class TweepyJinjaWrapper(TweepyWrapper):
             undefined=jj.StrictUndefined
         )
 
-    def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None) -> str:
+    def template_payload(self, jinja_context: Optional[Dict[str, Any]] = None,
+                         jinja_template: str='tweet.jinja') -> str:
         """
-        String to be tweeted out based on the colour
-        :param jinja_context: a dictionary containing the jinja context to use with the template
-                              this is addition to the provided with the object is initialised and
-                              the context generated within the function itself
-        :return: tweet payload
+        String to be tweeted
+        Args:
+            jinja_context: a dictionary containing the jinja context to use with the template
+                           this is addition to the provided with the object is initialised and
+                           the context generated within the function itself
+            jinja_template: the filename of the template to use
+        Returns:
+            A string built based on the template and context
         """
 
         context = {}
         context.update(self.__user_template_context)
         if jinja_context is not None:
             context.update(jinja_context)
-        template = self.__jj_env.get_template("tweet.jinja")
+        template = self.__jj_env.get_template(jinja_template)
 
         tweet_content = template.render(context)
 
         return tweet_content
 
-    def template_tweet(self, jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    def template_tweet(self, **kwargs) -> Optional[int]:
         """
         Send a tweet based on a Jinja template
 
@@ -91,7 +94,7 @@ class TweepyJinjaWrapper(TweepyWrapper):
         :return:
         """
         # if the payload is None then build off the template
-        tweet_content = self.template_payload(jinja_context)
+        tweet_content = self.template_payload(**kwargs)
 
         self.__logger.info(f'Built Tweet: {tweet_content}')
 
