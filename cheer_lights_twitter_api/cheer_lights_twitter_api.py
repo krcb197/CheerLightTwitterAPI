@@ -7,7 +7,7 @@ from enum import IntEnum
 import logging
 import logging.config
 
-from typing import Optional, Union, Dict, Any
+from typing import Optional, Union
 import os
 
 from .tweepy_jinja_wrapper import TweepyJinjaWrapper
@@ -65,8 +65,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
             if colour.upper() not in CheerLightColours.__members__:
                 raise ValueError(f'{colour} is not a legal colour to choose')
 
-    def colour_template_payload(self, colour: Union[CheerLightColours, str],
-                                jinja_context: Optional[Dict[str, Any]] = None) -> str:
+    def colour_template_payload(self, colour: Union[CheerLightColours, str], **kwargs) -> str:
         """
         String to be tweeted out based on the colour
         :param colour: colour
@@ -89,15 +88,14 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
         context = {
             'colour': colour_str
         }
-        if jinja_context is not None:
-            context.update(jinja_context)
+        if 'jinja_context' in kwargs:
+            context.update(kwargs.pop('jinja_context'))
 
         tweet_content = self.template_payload(jinja_context=context)
 
         return tweet_content
 
-    def colour_template_tweet(self, colour: Union[CheerLightColours, str],
-                              jinja_context: Optional[Dict[str, Any]] = None) -> Optional[int]:
+    def colour_template_tweet(self, colour: Union[CheerLightColours, str], **kwargs) -> Optional[int]:
         """
 
         :param colour: colour to include in the tweet
@@ -106,7 +104,7 @@ class CheerLightTwitterAPI(TweepyJinjaWrapper):
                               the context generated within the function itself
         :return:
         """
-        payload = self.colour_template_payload(colour=colour, jinja_context=jinja_context)
+        payload = self.colour_template_payload(colour=colour, **kwargs)
 
         self.__logger.info(f'tweet prepared: {payload}')
 
